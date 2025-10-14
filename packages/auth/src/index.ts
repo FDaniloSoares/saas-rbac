@@ -36,7 +36,11 @@ export function defineAbilityFor(user: User) {
 
   permissions[user.role](user, builder);
 
-  const abilily = builder.build();
+  const abilily = builder.build({
+    detectSubjectType(subject) {
+      return subject.__typename;
+    },
+  });
 
   return abilily;
 }
