@@ -7,18 +7,24 @@
   },
   "dependencies": {
     "@fastify/cors": "^11.1.0",
+    "@prisma/adapter-pg": "^7.3.0",
+    "@prisma/client": "^7.3.0",
     "@saas/auth": "workspace:*",
+    "bcryptjs": "^3.0.3",
     "fastify": "^5.6.2",
     "fastify-type-provider-zod": "^6.1.0",
+    "pg": "^8.18.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {
     "@saas/eslint-config": "workspace:*",
     "@saas/prettier": "workspace:*",
     "@saas/tsconfig": "workspace:*",
+    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^24.7.0",
+    "@types/pg": "^8.16.0",
     "dotenv": "^17.2.3",
-    "prisma": "^7.0.1",
+    "prisma": "^7.3.0",
     "tsx": "^4.20.6"
   },
   "eslintConfig": {
