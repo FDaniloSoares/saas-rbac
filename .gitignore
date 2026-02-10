@@ -38,3 +38,8 @@ yarn-error.log*
 *.pem
 
 mise.toml
+
+# Keep environment variables out of version control
+.env
+
+/src/generated/prisma
