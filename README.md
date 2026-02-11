@@ -38,25 +38,41 @@ Este é um monorepo organizado com a seguinte estrutura:
 ```
 saas-rbac/
 ├── apps/
-│   └── api/                    # API REST com Fastify
+│   └── api/                        # API REST com Fastify
 │       ├── src/
-│       │   └── http/
-│       │       ├── server.ts   # Servidor Fastify
-│       │       └── routes/     # Rotas da API
-│       └── prisma/
-│           └── schema.prisma   # Schema do banco de dados
+│       │   ├── http/
+│       │   │   ├── server.ts       # Servidor Fastify
+│       │   │   └── routes/
+│       │   │       └── auth/       # Rotas de autenticação
+│       │   │           └── create-account.ts
+│       │   └── lib/
+│       │       └── prisma.ts       # Cliente Prisma configurado
+│       ├── prisma/
+│       │   ├── schema.prisma       # Schema do banco de dados
+│       │   └── migrations/         # Migrations do Prisma
+│       ├── prisma.config.ts        # Configuração Prisma 7
+│       └── package.json
 ├── packages/
-│   └── auth/                   # Sistema RBAC com CASL
-│       └── src/
-│           ├── index.ts        # Definição de abilities
-│           ├── permissions.ts  # Permissões por role
-│           ├── roles.ts        # Definição de roles
-│           ├── models/         # Modelos de dados
-│           └── subjects/       # Subjects do CASL
-└── config/                     # Configurações compartilhadas
-    ├── eslint-config/          # Configuração ESLint
-    ├── prettier/               # Configuração Prettier
-    └── typescript-config/      # Configuração TypeScript
+│   └── auth/                       # Sistema RBAC com CASL
+│       ├── src/
+│       │   ├── index.ts            # Definição de abilities
+│       │   ├── permissions.ts      # Permissões por role
+│       │   ├── roles.ts            # Definição de roles
+│       │   ├── models/             # Modelos de dados
+│       │   │   ├── organization.ts
+│       │   │   ├── project.ts
+│       │   │   └── user.ts
+│       │   └── subjects/           # Subjects do CASL
+│       │       ├── billing.ts
+│       │       ├── invite.ts
+│       │       ├── organization.ts
+│       │       ├── project.ts
+│       │       └── user.ts
+│       └── package.json
+└── config/                         # Configurações compartilhadas
+    ├── eslint-config/              # Configuração ESLint
+    ├── prettier/                   # Configuração Prettier
+    └── typescript-config/          # Configuração TypeScript
 ```
 
 ## Sistema de Roles e Permissões
