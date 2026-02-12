@@ -17,10 +17,10 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.3.0",
     "@saas/eslint-config": "workspace:*",
     "@saas/prettier": "workspace:*",
     "@saas/tsconfig": "workspace:*",
-    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^24.7.0",
     "@types/pg": "^8.16.0",
     "dotenv": "^17.2.3",
