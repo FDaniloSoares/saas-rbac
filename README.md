@@ -1,303 +1,216 @@
-# SaaS RBAC
+# SaaS RBAC — Multi-Tenant Authorization System
 
-Sistema de autenticação e autorização baseado em RBAC (Role-Based Access Control) para aplicações SaaS multi-tenant, construído com Node.js, TypeScript e CASL.
+> A production-grade, multi-tenant SaaS platform built with **Node.js**, **Fastify**, **Next.js**, and **CASL** — implementing fine-grained **Role-Based Access Control (RBAC)** across isolated organizations, projects, and resources.
 
-## Sobre o Projeto
+Built as part of my ongoing exploration of **scalable fullstack architecture**, with a strong emphasis on authorization design, clean separation of concerns, and product-driven engineering.
 
-Este projeto implementa um sistema completo de controle de acesso baseado em funções (RBAC) para aplicações SaaS, permitindo gerenciar permissões granulares de usuários em organizações, projetos e recursos. O sistema utiliza CASL para definição de políticas de autorização e Prisma para gerenciamento do banco de dados PostgreSQL.
+---
 
-## Tecnologias
+## What This Project Is About
+
+Modern SaaS products share a common, non-trivial challenge: **who can do what, where, and under which conditions**.
+
+This project addresses that challenge head-on by implementing a complete **multi-tenant RBAC system** — where each tenant (organization) is isolated, users hold different roles per organization, and permissions are enforced consistently across the entire application using **CASL** as the authorization engine.
+
+Key design goals:
+- **Multi-tenancy** — each organization is a separate tenant with its own members, projects, and permissions
+- **RBAC** — users hold roles (`ADMIN`, `MEMBER`, `BILLING`) scoped to each organization
+- **Isomorphic authorization** — the `@saas/auth` package is shared between backend and frontend
+- **Type safety end-to-end** — TypeScript + Zod + Prisma from database schema to HTTP response
+- **Monorepo** — managed with Turborepo for fast, incremental builds
+
+---
+
+## Tech Stack
 
 ### Core
-- **Node.js** (>=18) - Runtime JavaScript
-- **TypeScript** - Linguagem tipada
-- **pnpm** (9.0.0) - Gerenciador de pacotes
-- **Turborepo** - Build system para monorepos
+| Tool | Purpose |
+|------|---------|
+| **Node.js** (≥18) | JavaScript runtime |
+| **TypeScript** | Type-safe development |
+| **pnpm** | Fast, disk-efficient package manager |
+| **Turborepo** | Monorepo build system with caching |
 
-### Backend (API)
-- **Fastify** - Framework web de alta performance
-- **Zod** - Validação de schemas TypeScript-first
-- **fastify-type-provider-zod** - Integração Fastify + Zod
-- **Prisma** - ORM para PostgreSQL
-- **PostgreSQL** - Banco de dados relacional
+### Backend — `apps/api`
+| Tool | Purpose |
+|------|---------|
+| **Fastify** | High-performance HTTP framework |
+| **Zod** | TypeScript-first schema validation |
+| **Prisma 7** | Type-safe ORM with PostgreSQL adapter |
+| **PostgreSQL** | Relational database |
+| **bcryptjs** | Password hashing |
 
-### Autorização
-- **CASL** - Framework de autorização isomórfico
-- **@saas/auth** - Pacote customizado de RBAC
+### Frontend — `apps/web`
+| Tool | Purpose |
+|------|---------|
+| **Next.js** | React framework with SSR/SSG |
+| **TypeScript** | Type-safe UI development |
+| **Tailwind CSS** | Utility-first styling |
 
-### Ferramentas
-- **ESLint** - Linter JavaScript/TypeScript
-- **Prettier** - Formatador de código
-- **tsx** - TypeScript executor
-- **Docker** - Containerização (PostgreSQL)
+### Authorization
+| Tool | Purpose |
+|------|---------|
+| **CASL** | Isomorphic, attribute-based authorization |
+| **@saas/auth** | Shared RBAC package (abilities + permissions) |
 
-## Estrutura do Projeto
+---
 
-Este é um monorepo organizado com a seguinte estrutura:
+## RBAC Design
 
-```
-saas-rbac/
-├── apps/
-│   └── api/                        # API REST com Fastify
-│       ├── src/
-│       │   ├── http/
-│       │   │   ├── server.ts       # Servidor Fastify
-│       │   │   └── routes/
-│       │   │       └── auth/       # Rotas de autenticação
-│       │   │           └── create-account.ts
-│       │   └── lib/
-│       │       └── prisma.ts       # Cliente Prisma configurado
-│       ├── prisma/
-│       │   ├── schema.prisma       # Schema do banco de dados
-│       │   └── migrations/         # Migrations do Prisma
-│       ├── prisma.config.ts        # Configuração Prisma 7
-│       └── package.json
-├── packages/
-│   └── auth/                       # Sistema RBAC com CASL
-│       ├── src/
-│       │   ├── index.ts            # Definição de abilities
-│       │   ├── permissions.ts      # Permissões por role
-│       │   ├── roles.ts            # Definição de roles
-│       │   ├── models/             # Modelos de dados
-│       │   │   ├── organization.ts
-│       │   │   ├── project.ts
-│       │   │   └── user.ts
-│       │   └── subjects/           # Subjects do CASL
-│       │       ├── billing.ts
-│       │       ├── invite.ts
-│       │       ├── organization.ts
-│       │       ├── project.ts
-│       │       └── user.ts
-│       └── package.json
-└── config/                         # Configurações compartilhadas
-    ├── eslint-config/              # Configuração ESLint
-    ├── prettier/                   # Configuração Prettier
-    └── typescript-config/          # Configuração TypeScript
-```
+### Roles
 
-## Sistema de Roles e Permissões
+| Role | Scope | Key Permissions |
+|------|-------|-----------------|
+| `ADMIN` | Organization-wide | Full access to all resources; manage members, projects, billing |
+| `MEMBER` | Project-level | View users; create, read, update and delete own projects |
+| `BILLING` | Billing-only | Manage billing information exclusively |
 
-### Roles Disponíveis
+### Subjects
 
-#### ADMIN
-- Acesso total a todos os recursos
-- Pode transferir propriedade da organização (apenas o owner)
-- Pode atualizar configurações da organização (apenas o owner)
+Permissions are structured around **subjects** — the entities being acted upon:
 
-#### MEMBER
-- Visualizar usuários
-- Criar e visualizar projetos
-- Atualizar e deletar seus próprios projetos
+| Subject | Actions |
+|---------|---------|
+| `User` | `get`, `update`, `delete` |
+| `Organization` | `manage`, `update`, `delete`, `transfer-ownership` |
+| `Project` | `manage`, `get`, `create`, `update`, `delete` |
+| `Invite` | `get`, `create`, `delete` |
+| `Billing` | `manage` |
 
-#### BILLING
-- Gerenciar informações de cobrança
-- Acesso restrito apenas a recursos de billing
-
-### Estrutura de Permissões
-
-As permissões são organizadas por **subjects**:
-
-- **User** - Gerenciamento de usuários
-- **Organization** - Gerenciamento de organizações
-- **Project** - Gerenciamento de projetos
-- **Invite** - Gerenciamento de convites
-- **Billing** - Gerenciamento de cobrança
-
-## Banco de Dados
-
-### Modelos Principais
-
-#### User
-- Informações do usuário (nome, email, avatar)
-- Autenticação (passwordHash)
-- Relações: tokens, accounts, invites, membros, organizações, projetos
-
-#### Organization
-- Informações da organização (nome, slug, domínio)
-- Owner (proprietário)
-- Auto-attach por domínio
-- Relações: membros, projetos, convites
-
-#### Project
-- Informações do projeto (nome, descrição, slug)
-- Pertence a uma organização
-- Possui um owner
-- Avatar personalizado
-
-#### Member
-- Relacionamento entre User e Organization
-- Define o role do usuário na organização
-
-#### Invite
-- Convites para organizações
-- Define o role do convidado
-- Relacionado ao autor do convite
-
-#### Account
-- Contas de provedores externos (GitHub)
-- Autenticação OAuth
-
-#### Token
-- Tokens de recuperação de senha
-- Tipos: PASSWORD_RECOVER
-
-## Pré-requisitos
-
-- Node.js >= 18
-- pnpm >= 9.0.0
-- Docker e Docker Compose (para PostgreSQL)
-
-## Instalação
-
-1. Clone o repositório:
-```bash
-git clone <repository-url>
-cd saas-rbac
-```
-
-2. Instale as dependências:
-```bash
-pnpm install
-```
-
-3. Configure as variáveis de ambiente:
-```bash
-# apps/api/.env
-DATABASE_URL="postgresql://docker:docker@localhost:5432/next-saas"
-```
-
-4. Inicie o banco de dados PostgreSQL:
-```bash
-docker-compose up -d
-```
-
-5. Execute as migrations do Prisma:
-```bash
-cd apps/api
-pnpm prisma migrate dev
-```
-
-## Como Usar
-
-### Desenvolvimento
-
-Execute todos os serviços em modo de desenvolvimento:
-```bash
-pnpm dev
-```
-
-Ou execute apenas a API:
-```bash
-cd apps/api
-pnpm dev
-```
-
-A API estará disponível em `http://localhost:3333`
-
-### Build
-
-Compile todos os pacotes:
-```bash
-pnpm build
-```
-
-### Lint
-
-Execute o linter em todos os pacotes:
-```bash
-pnpm lint
-```
-
-### Type Check
-
-Verifique os tipos TypeScript:
-```bash
-pnpm check-types
-```
-
-## Exemplo de Uso do Sistema RBAC
-
-### Definindo Abilities para um Usuário
+### How It Works
 
 ```typescript
 import { defineAbilityFor } from '@saas/auth'
 
-const user = {
-  id: 'user-id',
-  role: 'MEMBER'
-}
+const ability = defineAbilityFor({ id: 'user-id', role: 'MEMBER' })
 
-const ability = defineAbilityFor(user)
+// Can the user create a project?
+ability.can('create', 'Project') // true
 
-// Verificar permissões
-if (ability.can('create', 'Project')) {
-  // Usuário pode criar projetos
-}
+// Can the user update a project they don't own?
+ability.can('update', subject('Project', { ownerId: 'other-user-id' })) // false
 
-if (ability.can('update', 'Project', { ownerId: user.id })) {
-  // Usuário pode atualizar seus próprios projetos
-}
+// Can the user update their own project?
+ability.can('update', subject('Project', { ownerId: 'user-id' })) // true
 ```
 
-### Estrutura de Subjects
+The `@saas/auth` package is **isomorphic** — the same ability definitions are consumed by both the Fastify API and the Next.js frontend, eliminating permission drift between layers.
 
-```typescript
-// Exemplo de subject Project
-const projectSubject = z.tuple([
-  z.union([
-    z.literal('manage'),
-    z.literal('get'),
-    z.literal('create'),
-    z.literal('update'),
-    z.literal('delete'),
-  ]),
-  z.literal('Project'),
-])
+---
+
+## Multi-Tenancy Model
+
+Each **Organization** is an isolated tenant. A user can belong to multiple organizations with different roles in each:
+
+```
+User
+ ├── Organization A → role: ADMIN
+ ├── Organization B → role: MEMBER
+ └── Organization C → role: BILLING
 ```
 
-## Scripts Disponíveis
+Organizations can also **auto-attach users by email domain**, simplifying onboarding for company-wide deployments.
 
-### Raiz do Projeto
-- `pnpm dev` - Inicia todos os serviços em modo desenvolvimento
-- `pnpm build` - Compila todos os pacotes
-- `pnpm lint` - Executa o linter
-- `pnpm check-types` - Verifica tipos TypeScript
+---
 
-### API (apps/api)
-- `pnpm dev` - Inicia a API em modo watch
+## Project Structure
 
-## Arquitetura
+```
+saas-rbac/
+├── apps/
+│   ├── api/                        # Fastify REST API
+│   │   ├── src/
+│   │   │   ├── http/
+│   │   │   │   ├── server.ts
+│   │   │   │   └── routes/
+│   │   │   │       └── auth/       # Authentication routes
+│   │   │   └── lib/
+│   │   │       └── prisma.ts       # Prisma client (pg adapter)
+│   │   ├── prisma/
+│   │   │   ├── schema.prisma       # Database schema
+│   │   │   ├── seeds.ts            # Seed script
+│   │   │   └── migrations/
+│   │   └── prisma.config.ts        # Prisma 7 config
+│   └── web/                        # Next.js frontend
+├── packages/
+│   └── auth/                       # Shared RBAC package (CASL)
+│       └── src/
+│           ├── index.ts            # defineAbilityFor
+│           ├── permissions.ts      # Role → permission mappings
+│           ├── roles.ts            # Role enum
+│           ├── models/             # Zod schemas for subjects
+│           └── subjects/           # CASL subject definitions
+└── config/
+    ├── eslint-config/
+    ├── prettier/
+    └── typescript-config/
+```
 
-### Monorepo com Turborepo
+---
 
-O projeto utiliza Turborepo para gerenciar o build cache e paralelização de tarefas no monorepo.
+## Getting Started
 
-### Separação de Responsabilidades
+### Prerequisites
 
-- **apps/api**: Contém a API REST e lógica de negócio
-- **packages/auth**: Sistema RBAC reutilizável e independente
-- **config/**: Configurações compartilhadas entre pacotes
+- Node.js ≥ 18
+- pnpm ≥ 9
+- Docker + Docker Compose
 
-### Type Safety
+### Setup
 
-Todo o projeto utiliza TypeScript com validação runtime através do Zod, garantindo type safety em runtime e compile time.
+```bash
+# 1. Clone the repository
+git clone <repository-url>
+cd saas-rbac
 
-### Database First com Prisma
+# 2. Install dependencies
+pnpm install
 
-O schema do Prisma é a fonte da verdade para os modelos de dados, com migrations versionadas.
+# 3. Configure environment variables
+# apps/api/.env
+DATABASE_URL="postgresql://docker:docker@localhost:5432/next-saas"
 
-## Contribuindo
+# 4. Start PostgreSQL
+docker-compose up -d
 
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
+# 5. Run migrations
+cd apps/api && pnpm prisma migrate dev
 
-## Licença
+# 6. Seed the database
+pnpm prisma db seed
+```
 
-Este projeto é privado e não possui licença pública.
+### Development
 
-## Contato
+```bash
+# Run all apps in parallel (Turborepo)
+pnpm dev
 
-Para dúvidas ou sugestões, entre em contato através das issues do repositório.
+# API only
+cd apps/api && pnpm dev   # http://localhost:3333
+
+# Web only
+cd apps/web && pnpm dev   # http://localhost:3000
+```
+
+### Scripts
+
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start all services in watch mode |
+| `pnpm build` | Build all packages |
+| `pnpm lint` | Run ESLint across the monorepo |
+| `pnpm check-types` | TypeScript type checking |
+
+---
+
+## Architecture Notes
+
+### Why Turborepo?
+Tasks like `build`, `lint`, and `check-types` are cached and parallelized. Changing only `packages/auth` won't trigger a rebuild of unrelated apps.
+
+### Why CASL?
+CASL enables **attribute-based conditions** on top of role-based rules — e.g., "a MEMBER can update a Project, but only if they own it." This goes beyond simple role checks and supports the nuanced permission models real SaaS products require.
+
+### Why a shared `@saas/auth` package?
+Authorization logic defined once, consumed everywhere. The API enforces it server-side; the frontend uses it to conditionally render UI — no duplication, no drift.
