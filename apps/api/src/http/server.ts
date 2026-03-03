@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import { fastify } from 'fastify';
+import fastifyJwt from '@fastify/jwt';
 import fastifyCors from '@fastify/cors';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUI from '@fastify/swagger-ui';
@@ -10,6 +11,7 @@ import {
   ZodTypeProvider,
 } from 'fastify-type-provider-zod';
 import { CreateAccount } from './routes/auth/create-account';
+import { authenticateWithPassord } from './routes/auth/authenticate-with-password';
 
 const app = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -32,9 +34,15 @@ app.register(fastifySwaggerUI, {
   routePrefix: '/swagger'
 });
 
+app.register(fastifyJwt, {
+  secret: 'my-jwt-secret',
+  
+})
+
 app.register(fastifyCors);
 
 app.register(CreateAccount);
+app.register(authenticateWithPassord);
 
 app.listen({ port: 3333 }).then(() => {
   console.log('Http server running!');
