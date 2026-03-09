@@ -12,6 +12,7 @@ import {
 } from 'fastify-type-provider-zod';
 import { CreateAccount } from './routes/auth/create-account';
 import { authenticateWithPassord } from './routes/auth/authenticate-with-password';
+import { getProfile } from './routes/auth/get-profile';
 
 const app = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -21,28 +22,37 @@ app.setValidatorCompiler(validatorCompiler);
 app.register(fastifySwagger, {
   openapi: {
     info: {
-      title: 'Next.js Saas',
+      title: 'RBAC SaaS API',
       description: 'Full-stack app with multi-tenant & RBAC',
       version: '1.0.0',
     },
-    servers:[],
+    servers: [],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+      },
+    },
   },
-  transform: jsonSchemaTransform
-})
+  transform: jsonSchemaTransform,
+});
 
 app.register(fastifySwaggerUI, {
-  routePrefix: '/swagger'
+  routePrefix: '/swagger',
 });
 
 app.register(fastifyJwt, {
   secret: 'my-jwt-secret',
-  
-})
+});
 
 app.register(fastifyCors);
 
 app.register(CreateAccount);
 app.register(authenticateWithPassord);
+app.register(getProfile);
 
 app.listen({ port: 3333 }).then(() => {
   console.log('Http server running!');
