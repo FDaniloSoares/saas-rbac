@@ -5,7 +5,7 @@ import z from 'zod/v4';
 
 export async function requestPasswordRecover(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
-    '/password-recover',
+    '/password/recover',
     {
       schema: {
         tags: ['auth'],
@@ -41,7 +41,8 @@ export async function requestPasswordRecover(app: FastifyInstance) {
         },
       });
 
-      // Send emaiul with the code to the user to recover the password
+      // Send email with the code to the user to recover the password
+      console.log(`Password recovery: ${code}`);
       return reply.status(201).send();
     }
   );
