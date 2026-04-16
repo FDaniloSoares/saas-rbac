@@ -19,6 +19,7 @@
     "@saas/env": "workspace:*",
     "bcryptjs": "^3.0.3",
     "fastify": "^5.6.2",
+    "fastify-plugin": "4.5.1",
     "fastify-type-provider-zod": "^6.1.0",
     "pg": "^8.18.0",
     "zod": "^4.1.12"
