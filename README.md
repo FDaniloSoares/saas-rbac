@@ -178,5 +178,3 @@ API docs available at `http://localhost:3333/docs` (Swagger UI).
 **CASL** — enables attribute-based conditions on top of role checks (e.g., "a MEMBER can update a Project, but only if they own it"). This goes beyond simple role checks and supports nuanced permission models real SaaS products require.
 
 **Shared `@saas/auth` package** — authorization logic defined once, consumed by both API and frontend. The API enforces it server-side; the frontend uses it to conditionally render UI.
-
-**Prisma 7 with pg adapter** — uses the `@prisma/adapter-pg` pattern with a connection pool, required for Prisma 7's adapter-based architecture.
