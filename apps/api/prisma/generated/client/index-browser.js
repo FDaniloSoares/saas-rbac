@@ -169,7 +169,7 @@ exports.Prisma.OrganizationScalarFieldEnum = {
   avatarUrl: 'avatarUrl',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  userId: 'userId'
+  ownerId: 'ownerId'
 };
 
 exports.Prisma.ProjectScalarFieldEnum = {
@@ -181,7 +181,7 @@ exports.Prisma.ProjectScalarFieldEnum = {
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   organizationId: 'organizationId',
-  userId: 'userId'
+  ownerId: 'ownerId'
 };
 
 exports.Prisma.SortOrder = {
