@@ -5,9 +5,16 @@ import { prisma } from '@/lib/prisma';
 
 export const auth = fastifyPlugin(async (app: FastifyInstance) => {
   app.addHook('preHandler', async (request) => {
+    let currentUserId: string | null = null;
+
     request.getCurrentUserId = async () => {
+      if (currentUserId) {
+        return currentUserId;
+      }
+
       try {
         const { sub } = await request.jwtVerify<{ sub: string }>();
+        currentUserId = sub;
         return sub;
       } catch {
         throw new UnauthorizedError('Invalid auth token');
@@ -30,7 +37,7 @@ export const auth = fastifyPlugin(async (app: FastifyInstance) => {
       });
 
       if (!member) {
-        throw new UnauthorizedError('You are not the the father!!!');
+        throw new UnauthorizedError('You are not the father!!!');
       }
 
       const { organization, ...membership } = member;
