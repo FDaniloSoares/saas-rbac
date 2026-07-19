@@ -1,7 +1,9 @@
-import { auth } from '@/http/middlewares/auth';
-import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import type { FastifyInstance } from 'fastify/types/instance';
+import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
+
+import { auth } from '@/http/middlewares/auth';
+
 import { Role } from '../../../../prisma/generated/client';
 
 export async function getMembership(app: FastifyInstance) {

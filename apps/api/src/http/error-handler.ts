@@ -1,8 +1,9 @@
-import type { FastifyInstance } from "fastify"
-import { ZodError } from "zod/v3";
-import { Prisma } from "../../prisma/generated/client";
-import { BadRequestError } from "./routes/_errors/bad-request-errors";
-import { UnauthorizedError } from "./routes/_errors/unauthorized-error";
+import type { FastifyInstance } from 'fastify';
+import { ZodError } from 'zod/v3';
+
+import { Prisma } from '../../prisma/generated/client';
+import { BadRequestError } from './routes/_errors/bad-request-errors';
+import { UnauthorizedError } from './routes/_errors/unauthorized-error';
 
 type FastifyErrorHandler = FastifyInstance['errorHandler'];
 
@@ -45,6 +46,6 @@ export const errorHandler: FastifyErrorHandler = (error, request, reply) => {
   // send error to observability platform
 
   return reply.status(500).send({
-    message: 'Internal server error'
+    message: 'Internal server error',
   });
-}
+};

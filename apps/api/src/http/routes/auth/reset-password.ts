@@ -1,8 +1,10 @@
-import { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { FastifyInstance } from 'fastify/types/instance';
-import { prisma } from '@/lib/prisma';
-import z from 'zod/v4';
 import { hash } from 'bcryptjs';
+import { FastifyInstance } from 'fastify/types/instance';
+import { ZodTypeProvider } from 'fastify-type-provider-zod';
+import z from 'zod/v4';
+
+import { prisma } from '@/lib/prisma';
+
 import { UnauthorizedError } from '../_errors/unauthorized-error';
 
 export async function resetPassword(app: FastifyInstance) {

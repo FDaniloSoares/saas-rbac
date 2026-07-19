@@ -1,8 +1,10 @@
 import { hash } from 'bcryptjs';
-import { prisma } from '@/lib/prisma';
 import type { FastifyInstance } from 'fastify';
 import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
+
+import { prisma } from '@/lib/prisma';
+
 import { UnauthorizedError } from '../_errors/unauthorized-error';
 
 export async function CreateAccount(app: FastifyInstance) {
@@ -35,9 +37,9 @@ export async function CreateAccount(app: FastifyInstance) {
       const autoJoinOrganization = await prisma.organization.findFirst({
         where: {
           domain,
-          shouldAttachUsersByDomain: true
-        }
-      })
+          shouldAttachUsersByDomain: true,
+        },
+      });
 
       const passwordHash = await hash(password, 6);
 
@@ -46,11 +48,13 @@ export async function CreateAccount(app: FastifyInstance) {
           name,
           email,
           passwordHash,
-          member_on: autoJoinOrganization ? {
-            create: {
-              organizationId: autoJoinOrganization.id,
-            }
-          } : undefined
+          member_on: autoJoinOrganization
+            ? {
+                create: {
+                  organizationId: autoJoinOrganization.id,
+                },
+              }
+            : undefined,
         },
       });
 

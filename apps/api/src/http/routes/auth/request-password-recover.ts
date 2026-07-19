@@ -1,7 +1,8 @@
-import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { FastifyInstance } from 'fastify/types/instance';
-import { prisma } from '@/lib/prisma';
+import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import z from 'zod/v4';
+
+import { prisma } from '@/lib/prisma';
 
 export async function requestPasswordRecover(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(

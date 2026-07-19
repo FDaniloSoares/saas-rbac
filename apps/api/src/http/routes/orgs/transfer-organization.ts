@@ -1,12 +1,14 @@
-import { auth } from '@/http/middlewares/auth';
-import { prisma } from '@/lib/prisma';
+import { organizationSchema } from '@saas/auth/src/models/organization';
 import type { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import z from 'zod';
-import { BadRequestError } from '../_errors/bad-request-errors';
-import { organizationSchema } from '@saas/auth/src/models/organization';
-import { UnauthorizedError } from '../_errors/unauthorized-error';
+
+import { auth } from '@/http/middlewares/auth';
+import { prisma } from '@/lib/prisma';
 import { getUserPermissions } from '@/utils/get-user-permissions';
+
+import { BadRequestError } from '../_errors/bad-request-errors';
+import { UnauthorizedError } from '../_errors/unauthorized-error';
 
 export async function transferOrganization(app: FastifyInstance) {
   app
