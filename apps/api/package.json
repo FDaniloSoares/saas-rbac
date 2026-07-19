@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_NO_WARNINGS=1 pnpm env:load tsx watch src/http/server.ts",
+    "dev": "cross-env NODE_NO_WARNINGS=1 pnpm env:load tsx watch src/http/server.ts",
     "db:migrate": "pnpm env:load prisma migrate dev",
     "db:studio": "pnpm env:load prisma studio",
     "env:load": "dotenv -e ../../.env --"
@@ -31,6 +31,7 @@
     "@saas/tsconfig": "workspace:*",
     "@types/node": "^24.7.0",
     "@types/pg": "^8.16.0",
+    "cross-env": "^10.1.0",
     "dotenv": "^17.2.3",
     "dotenv-cli": "^11.0.0",
     "prisma": "^7.3.0",
