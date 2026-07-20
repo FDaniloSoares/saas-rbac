@@ -21,6 +21,7 @@ import { getProfile } from './routes/auth/get-profile';
 import { requestPasswordRecover } from './routes/auth/request-password-recover';
 import { resetPassword } from './routes/auth/reset-password';
 import { getMembers } from './routes/members/get-members';
+import { removeMember } from './routes/members/remove-member';
 import { upadateMember } from './routes/members/update-member';
 import { createOrganization } from './routes/orgs/create-organization';
 import { getMembership } from './routes/orgs/get-menbership';
@@ -92,6 +93,7 @@ app.register(getProject);
 
 app.register(getMembers);
 app.register(upadateMember);
+app.register(removeMember);
 
 app.listen({ port: env.SERVER_PORT }).then(() => {
   console.log(`Http server running in port ${env.SERVER_PORT}!`);
