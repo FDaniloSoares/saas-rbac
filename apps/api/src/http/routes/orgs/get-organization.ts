@@ -8,7 +8,7 @@ export async function getOrganization(app: FastifyInstance) {
   app
     .withTypeProvider<ZodTypeProvider>()
     .register(auth)
-    .post(
+    .get(
       '/organizations/:slug',
       {
         schema: {
