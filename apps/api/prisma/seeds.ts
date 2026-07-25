@@ -1,9 +1,10 @@
 import { faker } from '@faker-js/faker';
-import { hash } from 'bcryptjs';
-import { PrismaClient } from './generated/client/client';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { Pool } from 'pg';
 import { env } from '@saas/env';
+import { hash } from 'bcryptjs';
+import { Pool } from 'pg';
+
+import { PrismaClient } from './generated/client/client';
 
 const pool = new Pool({
   connectionString: env.DATABASE_URL,
@@ -128,7 +129,6 @@ async function seed() {
 
   console.log('Seed completed successfully!');
   console.log('Organization:', organization.nome);
-
 }
 
 seed().then(() => {
