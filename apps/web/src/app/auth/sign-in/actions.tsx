@@ -1,14 +1,18 @@
 'use server';
 
-import ky from 'ky';
+import { signInWithPassword } from '@/http/sign-in-with-password';
 
-const api = ky.create({
-  prefix: 'http://localhost:3333',
-});
+export async function signInWithEmailAndPassword(
+  previousState: unknown,
+  data: FormData
+) {
+  console.log(previousState);
 
-export async function signInWithEmailAndPassword(data: FormData) {
   // a forma normal de FormData é [ ['nome', 'pedro'] ['password', 'passDo Pedro'] ]
   // por isso usamos Object.fromEntries para montar um objeto
+
+  // way to wait 2s sincronously
+  await new Promise((resolve) => setTimeout(resolve, 2000));
 
   const { email, password } = Object.fromEntries(data);
 
@@ -18,14 +22,12 @@ export async function signInWithEmailAndPassword(data: FormData) {
 
   console.log(Object.fromEntries(data));
 
-  const response = await api
-    .post('sessions/password', {
-      json: {
-        email,
-        password,
-      },
-    })
-    .json();
+  const result = signInWithPassword({
+    email: String(email),
+    password: String(password),
+  });
 
-  console.log('respose: ', response);
+  console.log('result: ', result);
+
+  return 'OK';
 }
