@@ -1,33 +1,62 @@
 'use server';
 
+import { HTTPError } from 'ky';
+import { z } from 'zod';
+
 import { signInWithPassword } from '@/http/sign-in-with-password';
 
-export async function signInWithEmailAndPassword(
-  previousState: unknown,
-  data: FormData
-) {
-  console.log(previousState);
+const signInSchema = z.object({
+  email: z.email({ message: 'Please, provide a valid e-mail address.' }),
+  password: z.string().min(1, { message: 'Please, provide your password.' }),
+});
 
+export async function signInWithEmailAndPassword(_: unknown, data: FormData) {
   // a forma normal de FormData é [ ['nome', 'pedro'] ['password', 'passDo Pedro'] ]
   // por isso usamos Object.fromEntries para montar um objeto
 
   // way to wait 2s sincronously
   await new Promise((resolve) => setTimeout(resolve, 2000));
 
-  const { email, password } = Object.fromEntries(data);
+  const result = signInSchema.safeParse(Object.fromEntries(data));
 
-  // email e password sao do tipo FormDataEntryValue (Object)
-  // mas como tem a funcao toString ele onde for usado como string nao reclama
-  // pois JS trnasforma para string
+  if (!result.success) {
+    // zod 4: error.flatten() foi depreciado -> usar z.flattenError()
+    // (a alternativa sugerida no aviso é z.treeifyError(), que devolve
+    // uma árvore: tree.properties?.email?.errors)
+    const { fieldErrors: errors } = z.flattenError(result.error);
 
-  console.log(Object.fromEntries(data));
+    return { success: false, message: null, errors };
+  }
 
-  const result = signInWithPassword({
-    email: String(email),
-    password: String(password),
-  });
+  // aqui email e password já saíram validados e tipados como string
+  const { email, password } = result.data;
 
-  console.log('result: ', result);
+  try {
+    const { token } = await signInWithPassword({ email, password });
 
-  return 'OK';
+    console.log('token: ', token);
+  } catch (error) {
+    if (error instanceof HTTPError) {
+      // ky v2 já lê o corpo da resposta de erro para preencher `error.data`,
+      // então `error.response.json()` falha com "Body has already been read".
+      // `data` vem como objeto (se o content-type for JSON), string ou undefined.
+      const { message } = (error.data ?? {}) as { message?: string };
+
+      return {
+        success: false,
+        message: message ?? 'Unexpected error, try again in a few minutes.',
+        errors: null,
+      };
+    }
+
+    console.error(error);
+
+    return {
+      success: false,
+      message: 'Unexpected error, try again in a few minutes.',
+      errors: null,
+    };
+  }
+
+  return { success: true, message: null, errors: null };
 }

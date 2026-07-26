@@ -139,6 +139,9 @@ importers:
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
+      zod:
+        specifier: 4.1.12
+        version: 4.1.12
     devDependencies:
       '@saas/eslint-config':
         specifier: workspace:*
