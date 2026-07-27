@@ -10,7 +10,7 @@ const signInSchema = z.object({
   password: z.string().min(1, { message: 'Please, provide your password.' }),
 });
 
-export async function signInWithEmailAndPassword(_: unknown, data: FormData) {
+export async function signInWithEmailAndPassword(data: FormData) {
   // a forma normal de FormData é [ ['nome', 'pedro'] ['password', 'passDo Pedro'] ]
   // por isso usamos Object.fromEntries para montar um objeto
 

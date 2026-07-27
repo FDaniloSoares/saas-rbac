@@ -2,7 +2,7 @@
 
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useActionState } from 'react';
+import { FormEvent, useState, useTransition } from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -13,13 +13,37 @@ import { Separator } from '@/components/ui/separator';
 import { signInWithEmailAndPassword } from './actions';
 
 export default function SignInForm() {
-  const [{ success, message, errors }, formAction, isPending] = useActionState(
-    signInWithEmailAndPassword,
-    { success: false, message: null, errors: null }
-  );
+  // const [{ success, message, errors }, formAction, isPending] = useActionState(
+  //   signInWithEmailAndPassword,
+  //   { success: false, message: null, errors: null }
+  // );
+
+  const [{ success, message, errors }, setFormState] = useState<{
+    success: boolean;
+    message: string | null;
+    errors: Record<string, string[]> | null;
+  }>({
+    success: false,
+    message: null,
+    errors: null,
+  });
+
+  const [isPending, startTransition] = useTransition();
+
+  async function handleSignIn(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const data = new FormData(form);
+
+    startTransition(async () => {
+      const state = await signInWithEmailAndPassword(data);
+      setFormState(state);
+    });
+  }
 
   return (
-    <form action={formAction} className="w-full max-w-sm space-y-4">
+    <form onSubmit={handleSignIn} className="w-full max-w-sm space-y-4">
       <div className="space-y-1">
         {success === false && message && (
           <Alert variant="destructive">
