@@ -2,6 +2,7 @@
 
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -13,8 +14,12 @@ import { useFormState } from '@/hooks/use-form-state';
 import { signInWithEmailAndPassword } from './actions';
 
 export default function SignInForm() {
+  const router = useRouter();
   const [{ success, message, errors }, handleSignIn, isPending] = useFormState(
-    signInWithEmailAndPassword
+    signInWithEmailAndPassword,
+    () => {
+      router.push('/');
+    }
   );
 
   return (
