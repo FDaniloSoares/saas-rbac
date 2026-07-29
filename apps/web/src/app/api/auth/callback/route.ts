@@ -22,9 +22,8 @@ export async function GET(request: NextRequest) {
     maxAge: 60 * 60 * 24 * 7,
   });
 
-  const redirectUrl = request.nextUrl.clone();
-  redirectUrl.pathname = '/';
-  redirectUrl.search = '';
-
-  return NextResponse.redirect(redirectUrl);
+  return new NextResponse(null, {
+    status: 307,
+    headers: { Location: '/' },
+  });
 }
