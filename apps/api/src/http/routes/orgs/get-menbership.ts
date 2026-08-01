@@ -24,23 +24,25 @@ export async function getMembership(app: FastifyInstance) {
               membership: z.object({
                 id: z.uuid(),
                 role: roleSchema,
+                userId: z.uuid(),
                 organizationId: z.uuid(),
               }),
             }),
           },
         },
       },
-      async (request, _reply) => {
+      async (request, reply) => {
         const { slug } = request.params;
         const { membership } = await request.getUserMembership(slug);
 
-        return {
+        return reply.status(200).send({
           membership: {
             id: membership.id,
             role: membership.role,
+            userId: membership.userId,
             organizationId: membership.organizationId,
           },
-        };
+        });
       }
     );
 }
