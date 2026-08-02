@@ -13,7 +13,7 @@ export async function Header() {
   const permissions = await ablility();
 
   return (
-    <div className="mx-auto flex max-w-300 items-center justify-between">
+    <div className="mx-auto flex max-w-300 items-center justify-between border-b pb-2">
       <div className="flex items-center gap-3">
         <Image src={dragonLogo} className="size-6 dark:invert" alt="logo" />
 
@@ -25,7 +25,10 @@ export async function Header() {
 
       <div className="flex items-center gap-4">
         <ThemeSwitcher />
-        <Separator orientation="vertical" className="h-5" />
+        <Separator
+          orientation="vertical"
+          className="h-5 data-vertical:self-center"
+        />
         <ProfileButton />
       </div>
     </div>
