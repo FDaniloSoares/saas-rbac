@@ -1,3 +1,9 @@
-export default async function Home() {
-  return <div className="border py-4">HOME</div>;
+import { AppShell } from '@/components/app-shell';
+
+export default function Home() {
+  return (
+    <AppShell>
+      <p className="text-muted-foreground text-sm">Select an organization</p>
+    </AppShell>
+  );
 }
