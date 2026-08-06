@@ -15,7 +15,7 @@ export async function upadateProject(app: FastifyInstance) {
     .withTypeProvider<ZodTypeProvider>()
     .register(auth)
     .patch(
-      '/organization/:slug/projects/:projectId',
+      '/organizations/:slug/projects/:projectId',
       {
         schema: {
           tags: ['projects'],

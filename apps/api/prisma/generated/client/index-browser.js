@@ -149,7 +149,7 @@ exports.Prisma.InviteScalarFieldEnum = {
   email: 'email',
   role: 'role',
   createdAt: 'createdAt',
-  userId: 'userId',
+  authorId: 'authorId',
   organizationId: 'organizationId'
 };
 
@@ -162,7 +162,7 @@ exports.Prisma.MemberScalarFieldEnum = {
 
 exports.Prisma.OrganizationScalarFieldEnum = {
   id: 'id',
-  nome: 'nome',
+  name: 'name',
   slug: 'slug',
   domain: 'domain',
   shouldAttachUsersByDomain: 'shouldAttachUsersByDomain',
@@ -174,7 +174,7 @@ exports.Prisma.OrganizationScalarFieldEnum = {
 
 exports.Prisma.ProjectScalarFieldEnum = {
   id: 'id',
-  nome: 'nome',
+  name: 'name',
   description: 'description',
   slug: 'slug',
   avatarUrl: 'avatarUrl',

@@ -32,7 +32,7 @@ export async function getInvite(app: FastifyInstance) {
                 })
                 .nullable(),
               organization: z.object({
-                nome: z.string().nullable(),
+                name: z.string().nullable(),
               }),
             }),
           }),
@@ -57,7 +57,7 @@ export async function getInvite(app: FastifyInstance) {
           },
           organization: {
             select: {
-              nome: true,
+              name: true,
             },
           },
         },

@@ -74,7 +74,7 @@ export async function updateOrganization(app: FastifyInstance) {
             id: organization.id,
           },
           data: {
-            nome: name,
+            name,
             // slug: createSlug(name),
             domain,
             shouldAttachUsersByDomain,

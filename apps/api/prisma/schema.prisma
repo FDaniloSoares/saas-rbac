@@ -69,8 +69,8 @@ model Invite {
   role      Role
   createdAt DateTime @default(now()) @map("created_at")
 
-  author User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId String? @map("user_id")
+  author   User?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  authorId String? @map("user_id")
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String       @map("organization_id")
@@ -96,7 +96,7 @@ model Member {
 
 model Organization {
   id                        String   @id @default(uuid())
-  nome                      String
+  name                      String   @map("nome")
   slug                      String   @unique
   domain                    String?  @unique
   shouldAttachUsersByDomain Boolean  @default(false) @map("should_attach_users_by_domain")
@@ -116,7 +116,7 @@ model Organization {
 
 model Project {
   id          String   @id @default(uuid())
-  nome        String
+  name        String   @map("nome")
   description String
   slug        String   @unique
   avatarUrl   String?  @map("avatar_url")

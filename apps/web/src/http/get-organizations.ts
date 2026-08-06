@@ -3,7 +3,7 @@ import { api } from './api-client';
 interface GetOrganizationsResponse {
   organizations: {
     id: string;
-    nome: string | null;
+    name: string;
     slug: string;
     avatarUrl: string | null;
   }[];

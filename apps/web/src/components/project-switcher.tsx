@@ -1,8 +1,11 @@
+'use client';
+
+import { useQuery } from '@tanstack/react-query';
 import { ChevronsUpDown, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
-import { getCurrentOrg } from '@/auth/auth';
-import { getOrganizations } from '@/http/get-organizations';
+import { getProjects } from '@/http/get-projects';
 
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import {
@@ -15,18 +18,23 @@ import {
   DropdownMenuTrigger,
 } from './ui/dropdown-menu';
 
-export async function OrganizationSwitcher() {
-  const currentOrgCookie = await getCurrentOrg();
-  const { organizations } = await getOrganizations();
+export function ProjectSwitcher() {
+  const { slug: orgSlug } = useParams<{
+    slug: string;
+  }>();
 
-  const curretOrganization = organizations.find(
-    (org) => org.slug === currentOrgCookie
-  );
+  const { data, isLoading } = useQuery({
+    queryKey: [orgSlug, 'projects'],
+    queryFn: () => getProjects(orgSlug),
+    enabled: !!orgSlug,
+  });
+
+  console.log(data);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="focus-visible:ring-primary flex w-42 items-center gap-2 rounded p-1 text-sm font-medium outline-none focus-visible:ring-2">
-        {curretOrganization ? (
+        {/* {curretOrganization ? (
           <>
             <Avatar className="mr-2 size-5">
               {curretOrganization.avatarUrl && (
@@ -38,28 +46,28 @@ export async function OrganizationSwitcher() {
               {curretOrganization.name}
             </span>
           </>
-        ) : (
-          <span className="text-muted-foreground">Select organization</span>
-        )}
+        ) : ( */}
+        <span className="text-muted-foreground">Select project</span>
+        {/* )} */}
         <ChevronsUpDown className="ml-auto size-4 shrink-0" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-50" alignOffset={-16}>
         <DropdownMenuGroup>
           <DropdownMenuLabel>Organizations</DropdownMenuLabel>
-          {organizations.map((org) => {
-            return (
-              <DropdownMenuItem
-                key={org.id}
-                render={<Link href={`/org/${org.slug}`} />}
-              >
-                <Avatar className="mr-2 size-5">
-                  {org.avatarUrl && <AvatarImage src={org.avatarUrl} />}
-                  <AvatarFallback />
-                </Avatar>
-                <span className="line-clamp-1">{org.name}</span>
-              </DropdownMenuItem>
-            );
-          })}
+          {/* {organizations.map((org) => {
+            return ( */}
+          <DropdownMenuItem
+            // key={org.id}
+            render={<Link href={'/'} />}
+          >
+            <Avatar className="mr-2 size-5">
+              <AvatarImage src={'https://teste.com'} />
+              <AvatarFallback />
+            </Avatar>
+            <span className="line-clamp-1">Projeto teste</span>
+          </DropdownMenuItem>
+          {/* ); */}
+          {/* })} */}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem render={<Link href="/create-organization" />}>

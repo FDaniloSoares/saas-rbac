@@ -22,7 +22,7 @@ export async function getOrganization(app: FastifyInstance) {
             200: z.object({
               organization: z.object({
                 id: z.uuid(),
-                nome: z.string(),
+                name: z.string(),
                 slug: z.string(),
                 domain: z.string().nullable(),
                 shouldAttachUsersByDomain: z.boolean(),

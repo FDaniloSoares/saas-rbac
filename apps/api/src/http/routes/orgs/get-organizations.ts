@@ -21,7 +21,7 @@ export async function getOrganizations(app: FastifyInstance) {
               organizations: z.array(
                 z.object({
                   id: z.uuid(),
-                  nome: z.string(),
+                  name: z.string(),
                   slug: z.string(),
                   avatarUrl: z.url().nullable(),
                   role: z.enum(['ADMIN', 'MEMBER', 'BILLING']),
@@ -37,7 +37,7 @@ export async function getOrganizations(app: FastifyInstance) {
         const organizations = await prisma.organization.findMany({
           select: {
             id: true,
-            nome: true,
+            name: true,
             slug: true,
             avatarUrl: true,
             members: {

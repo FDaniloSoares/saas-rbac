@@ -14,7 +14,7 @@ export async function createProject(app: FastifyInstance) {
     .withTypeProvider<ZodTypeProvider>()
     .register(auth)
     .post(
-      '/organization/:slug/projects',
+      '/organizations/:slug/projects',
       {
         schema: {
           tags: ['projects'],
@@ -52,7 +52,7 @@ export async function createProject(app: FastifyInstance) {
 
         const project = await prisma.project.create({
           data: {
-            nome: name,
+            name,
             slug: createSlug(name),
             description,
             organizationId: organization.id,

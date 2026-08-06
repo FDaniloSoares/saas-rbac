@@ -49,7 +49,7 @@ export async function createOrganization(app: FastifyInstance) {
 
         const organization = await prisma.organization.create({
           data: {
-            nome: name,
+            name,
             slug: createSlug(name),
             domain,
             shouldAttachUsersByDomain,

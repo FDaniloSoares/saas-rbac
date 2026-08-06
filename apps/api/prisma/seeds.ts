@@ -53,7 +53,7 @@ async function seed() {
 
   const organization = await prisma.organization.create({
     data: {
-      nome: 'Acme Inc (Admin)',
+      name: 'Acme Inc (Admin)',
       slug: 'acme-inc-admin',
       domain: 'acme.com',
       shouldAttachUsersByDomain: true,
@@ -84,7 +84,7 @@ async function seed() {
 
   await prisma.project.create({
     data: {
-      nome: faker.lorem.words(5),
+      name: faker.lorem.words(5),
       slug: faker.lorem.slug(5),
       description: faker.lorem.paragraph(),
       avatarUrl: faker.image.avatarGitHub(),
@@ -99,7 +99,7 @@ async function seed() {
 
   await prisma.project.create({
     data: {
-      nome: faker.lorem.words(5),
+      name: faker.lorem.words(5),
       slug: faker.lorem.slug(5),
       description: faker.lorem.paragraph(),
       avatarUrl: faker.image.avatarGitHub(),
@@ -114,7 +114,7 @@ async function seed() {
 
   await prisma.project.create({
     data: {
-      nome: faker.lorem.words(5),
+      name: faker.lorem.words(5),
       slug: faker.lorem.slug(5),
       description: faker.lorem.paragraph(),
       avatarUrl: faker.image.avatarGitHub(),
@@ -129,7 +129,7 @@ async function seed() {
 
   const memberOrganization = await prisma.organization.create({
     data: {
-      nome: 'Rocketseat (Member)',
+      name: 'Rocketseat (Member)',
       slug: 'rocketseat-member',
       avatarUrl: 'https://github.com/rocketseat.png',
       owner: {
@@ -157,21 +157,21 @@ async function seed() {
         createMany: {
           data: [
             {
-              nome: faker.lorem.words(5),
+              name: faker.lorem.words(5),
               slug: faker.lorem.slug(5),
               description: faker.lorem.paragraph(),
               avatarUrl: faker.image.avatarGitHub(),
               ownerId: user.id,
             },
             {
-              nome: faker.lorem.words(5),
+              name: faker.lorem.words(5),
               slug: faker.lorem.slug(5),
               description: faker.lorem.paragraph(),
               avatarUrl: faker.image.avatarGitHub(),
               ownerId: anotherUser.id,
             },
             {
-              nome: faker.lorem.words(5),
+              name: faker.lorem.words(5),
               slug: faker.lorem.slug(5),
               description: faker.lorem.paragraph(),
               avatarUrl: faker.image.avatarGitHub(),
@@ -185,7 +185,7 @@ async function seed() {
 
   const billingOrganization = await prisma.organization.create({
     data: {
-      nome: 'Vercel (Billing)',
+      name: 'Vercel (Billing)',
       slug: 'vercel-billing',
       avatarUrl: 'https://github.com/vercel.png',
       owner: {
@@ -213,21 +213,21 @@ async function seed() {
         createMany: {
           data: [
             {
-              nome: faker.lorem.words(5),
+              name: faker.lorem.words(5),
               slug: faker.lorem.slug(5),
               description: faker.lorem.paragraph(),
               avatarUrl: faker.image.avatarGitHub(),
               ownerId: user.id,
             },
             {
-              nome: faker.lorem.words(5),
+              name: faker.lorem.words(5),
               slug: faker.lorem.slug(5),
               description: faker.lorem.paragraph(),
               avatarUrl: faker.image.avatarGitHub(),
               ownerId: anotherUser.id,
             },
             {
-              nome: faker.lorem.words(5),
+              name: faker.lorem.words(5),
               slug: faker.lorem.slug(5),
               description: faker.lorem.paragraph(),
               avatarUrl: faker.image.avatarGitHub(),
@@ -241,9 +241,9 @@ async function seed() {
 
   console.log('Seed completed successfully!');
   console.log('Organizations:', [
-    organization.nome,
-    memberOrganization.nome,
-    billingOrganization.nome,
+    organization.name,
+    memberOrganization.name,
+    billingOrganization.name,
   ]);
 }
 
