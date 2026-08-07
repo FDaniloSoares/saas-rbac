@@ -1,6 +1,15 @@
+import { redirect } from 'next/navigation';
+
+import { ablility } from '@/auth/auth';
+
 import { ProjectForm } from './project-form';
 
 export default function CreateProject() {
+  const permissions = await ablility();
+
+  if (permissions?.cannot('create', 'Project')) {
+    redirect('/');
+  }
   return (
     <div className="mx-auto w-2/3 space-y-4">
       <h1 className="text-2xl font-bold">Create Project</h1>
