@@ -1,6 +1,6 @@
 export default function Project() {
   return (
-    <div className="mx-auto w-full max-w-300">
+    <div>
       <h1 className="text-xl font-bold">Projects</h1>
     </div>
   );

@@ -15,7 +15,7 @@ export async function Tabs() {
 
   return (
     <div className="mb-2 border-b pb-1">
-      <nav className="mx-auto flex max-w-300 items-center gap-2">
+      <nav className="flex items-center gap-2">
         {canGetProjects && (
           <Button
             variant="ghost"

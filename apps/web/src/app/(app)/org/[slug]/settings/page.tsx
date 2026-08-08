@@ -17,7 +17,7 @@ export default async function Settings() {
   const canShutdownOrganization = permissions?.can('delete', 'Organization');
 
   return (
-    <div className="mx-auto w-full max-w-300">
+    <div>
       <h1 className="mb-3 text-xl font-bold">Settings</h1>
 
       <div className="space-y-4">

@@ -6,7 +6,9 @@ export function AppShell({
   return (
     <>
       <Header />
-      <main className="mx-auto w-full max-w-300">{children}</main>
+      <div className="px-6">
+        <main className="mx-auto w-full max-w-300">{children}</main>
+      </div>
     </>
   );
 }
