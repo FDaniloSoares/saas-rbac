@@ -2,7 +2,7 @@ import { Slash } from 'lucide-react';
 import Image from 'next/image';
 
 import dragonLogo from '@/assets/dragon-logo.svg';
-import { ablility } from '@/auth/auth';
+import { ability } from '@/auth/auth';
 
 import { OrganizationSwitcher } from './organization-switcher';
 import { ProfileButton } from './profile-button';
@@ -11,7 +11,7 @@ import { ThemeSwitcher } from './theme/theme-switcher';
 import { Separator } from './ui/separator';
 
 export async function Header() {
-  const permissions = await ablility();
+  const permissions = await ability();
 
   return (
     <div className="mx-auto mb-1 flex max-w-300 items-center justify-between border-b pb-1">

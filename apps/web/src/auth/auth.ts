@@ -25,7 +25,7 @@ export async function getCurrantMembership() {
   return membership;
 }
 
-export async function ablility() {
+export async function ability() {
   const membership = await getCurrantMembership();
 
   if (!membership) {
