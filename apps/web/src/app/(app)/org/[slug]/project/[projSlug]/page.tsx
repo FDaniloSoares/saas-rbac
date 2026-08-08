@@ -1,3 +1,7 @@
 export default function Project() {
-  return <p className="mx-auto w-full max-w-300">Project</p>;
+  return (
+    <div className="mx-auto w-full max-w-300">
+      <h1 className="text-xl font-bold">Projects</h1>
+    </div>
+  );
 }
