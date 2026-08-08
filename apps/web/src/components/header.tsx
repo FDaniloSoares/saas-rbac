@@ -14,7 +14,7 @@ export async function Header() {
   const permissions = await ablility();
 
   return (
-    <div className="mx-auto flex max-w-300 items-center justify-between border-b pb-2">
+    <div className="mx-auto mb-1 flex max-w-300 items-center justify-between border-b pb-1">
       <div className="flex items-center gap-3">
         <Image src={dragonLogo} className="size-6 dark:invert" alt="logo" />
 
