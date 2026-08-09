@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/card';
 
 import { OrganizationForm } from '../../organization-form';
+import { ShutdownOrganizationButton } from './shutdown-organization-button';
 
 export default async function Settings() {
   const permissions = await ability();
@@ -46,7 +47,9 @@ export default async function Settings() {
                 You cannot undo this action.
               </CardDescription>
             </CardHeader>
-            <CardContent></CardContent>
+            <CardContent>
+              <ShutdownOrganizationButton />
+            </CardContent>
           </Card>
         )}
       </div>

@@ -1,6 +1,7 @@
 import { defineAbilityFor } from '@saas/auth';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { cache } from 'react';
 
 import { getMembership } from '@/http/get-membership';
 import { getProfile } from '@/http/get-profille';
@@ -13,17 +14,26 @@ export async function getCurrentOrg() {
   return (await cookies()).get('org')?.value ?? null;
 }
 
-export async function getCurrantMembership() {
+export async function clearCurrentOrg() {
+  (await cookies()).delete('org');
+}
+
+export const getCurrantMembership = cache(async () => {
   const org = await getCurrentOrg();
 
   if (!org) {
     return null;
   }
 
-  const { membership } = await getMembership(org);
+  try {
+    const { membership } = await getMembership(org);
 
-  return membership;
-}
+    return membership;
+  } catch {
+    /* org do cookie nao existe mais ou o usuario perdeu acesso a ela */
+    return null;
+  }
+});
 
 export async function ability() {
   const membership = await getCurrantMembership();
