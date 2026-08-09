@@ -1,9 +1,12 @@
 'use server';
 
 import { HTTPError } from 'ky';
+import { revalidateTag } from 'next/cache';
 import { z } from 'zod';
 
+import { getCurrentOrg } from '@/auth/auth';
 import { createOrganization } from '@/http/create-organization';
+import { updateOrganization } from '@/http/update-organization';
 
 const organizationSchema = z
   .object({
@@ -42,6 +45,8 @@ const organizationSchema = z
     }
   );
 
+export type organizationSchema = z.infer<typeof organizationSchema>;
+
 export async function createOrganizationAction(data: FormData) {
   const result = organizationSchema.safeParse(Object.fromEntries(data));
 
@@ -55,6 +60,55 @@ export async function createOrganizationAction(data: FormData) {
 
   try {
     await createOrganization({ name, domain, shouldAttachUsersByDomain });
+    revalidateTag('organizations');
+  } catch (error) {
+    if (error instanceof HTTPError) {
+      const { message } = (error.data ?? {}) as { message?: string };
+
+      return {
+        success: false,
+        message: message ?? 'Unexpected error, try again in a few minutes.',
+        errors: null,
+      };
+    }
+
+    console.error(error);
+
+    return {
+      success: false,
+      message: 'Unexpected error, try again in a few minutes.',
+      errors: null,
+    };
+  }
+
+  return {
+    success: true,
+    message: 'Successfully saved organization',
+    errors: null,
+  };
+}
+
+export async function updateOrganizationAction(data: FormData) {
+  const currentOrg = await getCurrentOrg();
+  const result = organizationSchema.safeParse(Object.fromEntries(data));
+
+  if (!result.success) {
+    const { fieldErrors: errors } = z.flattenError(result.error);
+
+    return { success: false, message: null, errors };
+  }
+
+  const { name, domain, shouldAttachUsersByDomain } = result.data;
+
+  try {
+    await updateOrganization({
+      org: currentOrg!,
+      name,
+      domain,
+      shouldAttachUsersByDomain,
+    });
+
+    revalidateTag('organizations');
   } catch (error) {
     if (error instanceof HTTPError) {
       const { message } = (error.data ?? {}) as { message?: string };

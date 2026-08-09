@@ -1,5 +1,6 @@
 'use client';
 import { AlertTriangle, Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -8,12 +9,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useFormState } from '@/hooks/use-form-state';
 
-import { createOrganizationAction } from '../create-organization/actions';
+import {
+  createOrganizationAction,
+  organizationSchema,
+  updateOrganizationAction,
+} from './actions';
 
-export function OrganizationForm() {
-  const [{ success, message, errors }, handleSignIn, isPending] = useFormState(
-    createOrganizationAction
-  );
+interface OrganizarionFormProps {
+  isUpdatings?: boolean;
+  initialData?: organizationSchema;
+}
+
+export function OrganizationForm({
+  isUpdatings = false,
+  initialData,
+}: OrganizarionFormProps) {
+  const formAction = !isUpdatings
+    ? createOrganizationAction
+    : updateOrganizationAction;
+
+  const [defaultValues] = useState(initialData);
+
+  const [{ success, message, errors }, handleSignIn, isPending] =
+    useFormState(formAction);
 
   return (
     <form onSubmit={handleSignIn} className="space-y-4 text-xl">
@@ -42,6 +60,7 @@ export function OrganizationForm() {
           id="name"
           name="name"
           placeholder="Organization name"
+          defaultValue={defaultValues?.name}
         ></Input>
         {errors?.name && (
           <p className="text-xs font-medium text-red-50 dark:text-red-400">
@@ -57,6 +76,7 @@ export function OrganizationForm() {
           name="domain"
           inputMode="url"
           placeholder="example.com"
+          defaultValue={defaultValues?.domain ?? undefined}
         ></Input>
         {errors?.domain && (
           <p className="text-xs font-medium text-red-50 dark:text-red-400">
@@ -69,6 +89,7 @@ export function OrganizationForm() {
           <Checkbox
             name="shouldAttachUsersByDomain"
             id="shouldAttachUsersByDomain"
+            defaultChecked={defaultValues?.shouldAttachUsersByDomain}
           />
           <label htmlFor="shouldAttachUsersByDomain" className="space-y-1">
             <span className="text-sm leading-none font-medium">
