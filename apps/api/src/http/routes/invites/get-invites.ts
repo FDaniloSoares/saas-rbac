@@ -20,7 +20,7 @@ export async function getInvites(app: FastifyInstance) {
           tags: ['invites'],
           summary: 'Get all organization invites',
           params: z.object({
-            slug: z.uuid(),
+            slug: z.string(),
           }),
           response: {
             200: z.object({
