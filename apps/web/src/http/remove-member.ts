@@ -11,7 +11,5 @@ export async function removeMember({
   org,
   memberId,
 }: RemoveMemberRequest): Promise<RemoveMemberResponse> {
-  await api
-    .delete(`organizations/${org}/members/${memberId}`)
-    .json<RemoveMemberResponse>();
+  await api.delete(`organizations/${org}/members/${memberId}`);
 }
