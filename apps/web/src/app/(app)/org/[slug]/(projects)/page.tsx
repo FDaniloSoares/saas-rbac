@@ -18,6 +18,7 @@ export default async function Projects() {
         {permissions?.can('create', 'Project') && (
           <Button
             size="sm"
+            nativeButton={false}
             render={<Link href={`${currentOrg}/create-project`} />}
           >
             <Plus className="mr-2 size-4" />

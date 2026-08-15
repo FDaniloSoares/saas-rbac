@@ -29,13 +29,14 @@ export function useFormState(
     const data = new FormData(form);
 
     startTransition(async () => {
+      requestFormReset(form);
+
       const state = await action(data);
 
       if (state.success === true && onSuccess) {
         await onSuccess();
       }
       setFormState(state);
-      requestFormReset(form);
     });
   }
 
