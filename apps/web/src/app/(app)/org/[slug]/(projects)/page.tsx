@@ -12,7 +12,7 @@ export default async function Projects() {
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <div className="mb-3 flex items-center justify-between">
         <h1 className="text-xl font-bold">Projects</h1>
 
         {permissions?.can('create', 'Project') && (

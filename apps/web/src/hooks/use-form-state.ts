@@ -35,9 +35,8 @@ export function useFormState(
         await onSuccess();
       }
       setFormState(state);
+      requestFormReset(form);
     });
-
-    requestFormReset(form);
   }
 
   return [formState, handleSubmit, isPending] as const;
