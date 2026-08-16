@@ -1,9 +1,9 @@
 import { api } from './api-client';
 
-type CreateInviteResponse = void;
+type AcceptInviteResponse = void;
 
 export async function acceptInvite(
   inviteId: string
-): Promise<CreateInviteResponse> {
+): Promise<AcceptInviteResponse> {
   await api.post(`invites/${inviteId}/accept`);
 }

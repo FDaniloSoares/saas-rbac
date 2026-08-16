@@ -8,6 +8,7 @@
     "db:studio": "pnpm env:load prisma studio",
     "db:seed": "pnpm env:load prisma db seed",
     "db:invites": "pnpm env:load tsx prisma/create-invites.ts",
+    "db:pending-invites": "pnpm env:load tsx prisma/create-pending-invites.ts",
     "env:load": "dotenv -e ../../.env --"
   },
   "dependencies": {
