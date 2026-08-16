@@ -2,7 +2,7 @@
 
 import { AlertTriangle, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,9 @@ import { signInWithEmailAndPassword } from './actions';
 
 export default function SignInForm() {
   const router = useRouter();
+
+  const searchParams = useSearchParams();
+
   const [{ success, message, errors }, handleSignIn, isPending] = useFormState(
     signInWithEmailAndPassword,
     () => {
@@ -42,7 +45,8 @@ export default function SignInForm() {
             id="email"
             name="email"
             placeholder="Enter your email"
-          ></Input>
+            defaultValue={searchParams.get('email') ?? ''}
+          />
           {errors?.email && (
             <p className="text-xs font-medium text-red-50 dark:text-red-400">
               {errors.email[0]}
@@ -57,7 +61,7 @@ export default function SignInForm() {
             id="password"
             name="password"
             placeholder="Enter your password"
-          ></Input>
+          />
           {errors?.password && (
             <p className="text-xs font-medium text-red-50 dark:text-red-400">
               {errors.password[0]}

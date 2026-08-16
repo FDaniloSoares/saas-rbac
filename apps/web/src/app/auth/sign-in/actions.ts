@@ -4,6 +4,7 @@ import { HTTPError } from 'ky';
 import { cookies } from 'next/headers';
 import { z } from 'zod';
 
+import { acceptInvite } from '@/http/accept-invite';
 import { signInWithPassword } from '@/http/sign-in-with-password';
 
 const signInSchema = z.object({
@@ -39,6 +40,17 @@ export async function signInWithEmailAndPassword(data: FormData) {
       path: '/',
       maxAge: 60 * 60 * 24 * 7, // 7 days
     });
+
+    const inviteId = (await cookies()).get('inviteId')?.value;
+
+    if (inviteId) {
+      try {
+        await acceptInvite(inviteId);
+        (await cookies()).delete('inviteId');
+      } catch {
+        /* Nothing */
+      }
+    }
   } catch (error) {
     if (error instanceof HTTPError) {
       // ky v2 já lê o corpo da resposta de erro para preencher `error.data`,
