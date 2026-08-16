@@ -71,8 +71,8 @@ async function createPendingInvites() {
             select: { name: true },
           },
         },
-      }),
-    ),
+      })
+    )
   );
 
   console.log(`Pending invites for "${targetEmail}":`);
@@ -81,7 +81,7 @@ async function createPendingInvites() {
       organization: invite.organization.name,
       role: invite.role,
       author: author.name,
-    })),
+    }))
   );
 }
 
