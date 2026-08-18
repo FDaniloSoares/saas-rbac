@@ -13,7 +13,6 @@ export const permissions: Record<Role, PermissionsByRole> = {
   ADMIN(user, { can, cannot }) {
     can('manage', 'all');
 
-    // primeiro tem que negar tudo e depois fazer as condicoes
     cannot(['transfer_ownership', 'update'], 'Organization');
     can(['transfer_ownership', 'update'], 'Organization', {
       ownerId: { $eq: user.id },
