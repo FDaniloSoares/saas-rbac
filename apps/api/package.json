@@ -9,7 +9,9 @@
     "db:seed": "pnpm env:load prisma db seed",
     "db:invites": "pnpm env:load tsx prisma/create-invites.ts",
     "db:pending-invites": "pnpm env:load tsx prisma/create-pending-invites.ts",
-    "env:load": "dotenv -e ../../.env --"
+    "env:load": "dotenv -e ../../.env --",
+    "build": "tsup",
+    "start": "node dist/http/server.js"
   },
   "dependencies": {
     "@fastify/cors": "^11.1.0",
@@ -38,6 +40,7 @@
     "dotenv": "^17.2.3",
     "dotenv-cli": "^11.0.0",
     "prisma": "^7.3.0",
+    "tsup": "^8.5.1",
     "tsx": "^4.20.6"
   },
   "eslintConfig": {
