@@ -14,7 +14,7 @@ export default async function AppLayout({
   }
 
   return (
-    <div className="space-y-4 py-4">
+    <div className="flex h-svh flex-col py-4">
       {children}
       {sheet}
     </div>
