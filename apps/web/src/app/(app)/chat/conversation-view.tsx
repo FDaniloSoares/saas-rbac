@@ -101,7 +101,7 @@ export function ConversationView({
                 : 'bg-muted text-foreground rounded-bl-sm'
             )}
           >
-            <span className="text-sm break-words">{message.content}</span>
+            <span className="text-sm wrap-break-word">{message.content}</span>
             <span
               className={cn(
                 'mt-0.5 self-end text-[10px]',
