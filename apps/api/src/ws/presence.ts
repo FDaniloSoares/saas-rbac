@@ -1,6 +1,6 @@
 import type { WebSocket } from '@fastify/websocket';
 
-const OFFLINE_GRACE_PRERIOD_IN_MS = 5000;
+const OFFLINE_GRACE_PERIOD_IN_MS = 5000;
 
 export type PresenceEvent =
   | { type: 'presence:sync'; userIds: string[] }
@@ -20,6 +20,7 @@ function getOrganizationPresence(organizationId: string) {
 
   if (!presence) {
     presence = { users: new Map(), pendingOffline: new Map() };
+    organizations.set(organizationId, presence);
   }
 
   return presence;
@@ -123,10 +124,10 @@ export function disconnect(
     presence.users.delete(userId);
     broadcast(organizationId, { type: 'presence:offline', userId });
 
-    if (presence.users.size > 0) {
+    if (presence.users.size === 0) {
       organizations.delete(organizationId);
     }
-  }, OFFLINE_GRACE_PRERIOD_IN_MS);
+  }, OFFLINE_GRACE_PERIOD_IN_MS);
 
   presence.pendingOffline.set(userId, timeout);
 }

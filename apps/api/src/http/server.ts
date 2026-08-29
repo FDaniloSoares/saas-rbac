@@ -4,6 +4,7 @@ import fastifyCors from '@fastify/cors';
 import fastifyJwt from '@fastify/jwt';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUI from '@fastify/swagger-ui';
+import fastifyWebsocket from '@fastify/websocket';
 import { env } from '@saas/env';
 import { fastify } from 'fastify';
 import {
@@ -42,6 +43,7 @@ import { createProject } from './routes/projects/create-project';
 import { deleteProject } from './routes/projects/delete-project';
 import { getProject } from './routes/projects/get-project';
 import { getProjects } from './routes/projects/get-projects';
+import { organizationPresence } from './routes/ws/organization-presence';
 
 const app = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -78,6 +80,7 @@ app.register(fastifyJwt, {
 });
 
 app.register(fastifyCors);
+app.register(fastifyWebsocket);
 
 app.register(CreateAccount);
 app.register(authenticateWithPassword);
@@ -112,6 +115,8 @@ app.register(revokeInvite);
 app.register(getPendingInvite);
 
 app.register(getOrganizationBilling);
+
+app.register(organizationPresence);
 
 app.listen({ port: env.SERVER_PORT }).then(() => {
   console.log(`Http server running in port ${env.SERVER_PORT}!`);
