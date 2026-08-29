@@ -4,18 +4,25 @@ import { ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { useOnlineUsers } from '@/components/ws/presence-provider';
 import { cn } from '@/lib/utils';
 
 import { ContactAvatar } from './contact-avatar';
 import { ConversationView } from './conversation-view';
-import { conversations } from './conversations';
 
-export default function Chat() {
+export interface Contact {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+}
+
+export default function Chat({ contacts }: Readonly<{ contacts: Contact[] }>) {
+  const onlineUserIds = useOnlineUsers();
   const [expanded, setExpanded] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
 
-  const activeConversation =
-    conversations.find((conversation) => conversation.id === activeId) ?? null;
+  const activeContact =
+    contacts.find((contact) => contact.userId === activeId) ?? null;
 
   function toggleExpanded() {
     setExpanded((prevExpanded) => !prevExpanded);
@@ -35,9 +42,11 @@ export default function Chat() {
         expanded ? 'w-72' : 'w-16'
       )}
     >
-      {expanded && activeConversation ? (
+      {expanded && activeContact ? (
         <ConversationView
-          conversation={activeConversation}
+          key={activeContact.userId}
+          contact={activeContact}
+          online={onlineUserIds.has(activeContact.userId)}
           onBack={() => setActiveId(null)}
         />
       ) : (
@@ -63,17 +72,18 @@ export default function Chat() {
           </div>
 
           <nav className="min-h-0 flex-1 space-y-1 overflow-x-hidden overflow-y-auto p-2">
-            {conversations.map((conversation) => (
+            {contacts.map((contact) => (
               <button
-                key={conversation.id}
+                key={contact.userId}
                 type="button"
-                title={conversation.name}
-                onClick={() => openConversation(conversation.id)}
+                title={contact.name}
+                onClick={() => openConversation(contact.userId)}
                 className="hover:bg-sidebar-accent flex w-full cursor-pointer items-center gap-3 rounded-lg p-2 text-left transition-colors"
               >
                 <ContactAvatar
-                  name={conversation.name}
-                  online={conversation.online}
+                  name={contact.name}
+                  avatarUrl={contact.avatarUrl}
+                  online={onlineUserIds.has(contact.userId)}
                 />
 
                 <div
@@ -82,12 +92,7 @@ export default function Chat() {
                     expanded ? 'opacity-100 delay-100' : 'opacity-0'
                   )}
                 >
-                  <p className="truncate text-sm font-medium">
-                    {conversation.name}
-                  </p>
-                  <p className="text-muted-foreground truncate text-xs">
-                    {conversation.lastMessage}
-                  </p>
+                  <p className="truncate text-sm font-medium">{contact.name}</p>
                 </div>
               </button>
             ))}

@@ -1,4 +1,9 @@
-import { Avatar, AvatarBadge, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Avatar,
+  AvatarBadge,
+  AvatarFallback,
+  AvatarImage,
+} from '@/components/ui/avatar';
 import { cn, getInitials } from '@/lib/utils';
 
 const avatarColors = [
@@ -19,6 +24,7 @@ function getAvatarColor(name: string): string {
 
 interface ContactAvatarProps {
   name: string;
+  avatarUrl?: string | null;
   online?: boolean;
   size?: 'default' | 'sm' | 'lg';
   className?: string;
@@ -26,12 +32,16 @@ interface ContactAvatarProps {
 
 export function ContactAvatar({
   name,
+  avatarUrl,
   online = false,
   size = 'default',
   className,
 }: ContactAvatarProps) {
   return (
     <Avatar size={size} className={cn('shrink-0', className)}>
+      {avatarUrl && <AvatarImage src={avatarUrl} alt={name} />}
+
+      {/* o fallback fica visível enquanto a imagem carrega ou se ela falhar */}
       <AvatarFallback className={cn('font-medium', getAvatarColor(name))}>
         {getInitials(name)}
       </AvatarFallback>

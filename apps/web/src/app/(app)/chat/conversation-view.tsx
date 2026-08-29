@@ -8,26 +8,32 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 
+import type { Contact } from './chat';
 import { ContactAvatar } from './contact-avatar';
-import type { Conversation, Message } from './conversations';
+
+interface Message {
+  id: string;
+  content: string;
+  sentAt: string;
+  fromMe: boolean;
+}
 
 interface ConversationViewProps {
-  conversation: Conversation;
+  contact: Contact;
+  online: boolean;
   onBack: () => void;
 }
 
 export function ConversationView({
-  conversation,
+  contact,
+  online,
   onBack,
 }: ConversationViewProps) {
-  const [messages, setMessages] = useState<Message[]>(conversation.messages);
+  /* TODO: histórico virá da API e as novas mensagens do WebSocket.
+  por enquanto o estado é local e some ao trocar de contato */
+  const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setMessages(conversation.messages);
-    setDraft('');
-  }, [conversation]);
 
   useEffect(() => {
     const scrollElement = scrollRef.current;
@@ -72,14 +78,15 @@ export function ConversationView({
         </Button>
 
         <ContactAvatar
-          name={conversation.name}
-          online={conversation.online}
+          name={contact.name}
+          avatarUrl={contact.avatarUrl}
+          online={online}
           size="sm"
         />
 
         <div className="min-w-0">
-          <p className="truncate text-sm font-medium">{conversation.name}</p>
-          {conversation.online && (
+          <p className="truncate text-sm font-medium">{contact.name}</p>
+          {online && (
             <p className="text-xs text-emerald-600 dark:text-emerald-400">
               online
             </p>
@@ -91,29 +98,35 @@ export function ConversationView({
         ref={scrollRef}
         className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3"
       >
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={cn(
-              'flex w-fit max-w-[85%] flex-col rounded-xl px-3 py-2',
-              message.fromMe
-                ? 'bg-primary text-primary-foreground ml-auto rounded-br-sm'
-                : 'bg-muted text-foreground rounded-bl-sm'
-            )}
-          >
-            <span className="text-sm wrap-break-word">{message.content}</span>
-            <span
+        {messages.length === 0 ? (
+          <p className="text-muted-foreground mt-6 text-center text-xs text-balance">
+            Nenhuma mensagem ainda. Diga oi para {contact.name}.
+          </p>
+        ) : (
+          messages.map((message) => (
+            <div
+              key={message.id}
               className={cn(
-                'mt-0.5 self-end text-[10px]',
+                'flex w-fit max-w-[85%] flex-col rounded-xl px-3 py-2',
                 message.fromMe
-                  ? 'text-primary-foreground/70'
-                  : 'text-muted-foreground'
+                  ? 'bg-primary text-primary-foreground ml-auto rounded-br-sm'
+                  : 'bg-muted text-foreground rounded-bl-sm'
               )}
             >
-              {message.sentAt}
-            </span>
-          </div>
-        ))}
+              <span className="text-sm wrap-break-word">{message.content}</span>
+              <span
+                className={cn(
+                  'mt-0.5 self-end text-[10px]',
+                  message.fromMe
+                    ? 'text-primary-foreground/70'
+                    : 'text-muted-foreground'
+                )}
+              >
+                {message.sentAt}
+              </span>
+            </div>
+          ))
+        )}
       </div>
 
       <form
