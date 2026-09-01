@@ -22,6 +22,8 @@ import { getProfile } from './routes/auth/get-profile';
 import { requestPasswordRecover } from './routes/auth/request-password-recover';
 import { resetPassword } from './routes/auth/reset-password';
 import { getOrganizationBilling } from './routes/billing/get-organization-billing';
+import { getConversationMessages } from './routes/chat/get-conversation-messages';
+import { getConversations } from './routes/chat/get-conversations';
 import { acceptInvite } from './routes/invites/accept-invite';
 import { createInvite } from './routes/invites/create-invite';
 import { getInvite } from './routes/invites/get-invite';
@@ -43,7 +45,7 @@ import { createProject } from './routes/projects/create-project';
 import { deleteProject } from './routes/projects/delete-project';
 import { getProject } from './routes/projects/get-project';
 import { getProjects } from './routes/projects/get-projects';
-import { organizationPresence } from './routes/ws/organization-presence';
+import { organizationSocket } from './routes/ws/organization-socket';
 
 const app = fastify().withTypeProvider<ZodTypeProvider>();
 
@@ -116,7 +118,10 @@ app.register(getPendingInvite);
 
 app.register(getOrganizationBilling);
 
-app.register(organizationPresence);
+app.register(getConversations);
+app.register(getConversationMessages);
+
+app.register(organizationSocket);
 
 app.listen({ port: env.SERVER_PORT }).then(() => {
   console.log(`Http server running in port ${env.SERVER_PORT}!`);

@@ -3,15 +3,16 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import z from 'zod';
 
 import { prisma } from '@/lib/prisma';
+import { handleClientEvent } from '@/ws/handle-client-events';
 import { connect, disconnect } from '@/ws/presence';
 
 import { UnauthorizedError } from '../_errors/unauthorized-error';
 
 const HEARTBEAT_INTERVAL_IN_MS = 30_000;
 
-export async function organizationPresence(app: FastifyInstance) {
+export async function organizationSocket(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
-    '/organizations/:slug/presence',
+    '/organizations/:slug/ws',
     {
       websocket: true,
       schema: {
@@ -64,6 +65,10 @@ export async function organizationPresence(app: FastifyInstance) {
 
       socket.on('pong', () => {
         isAlive = true;
+      });
+
+      socket.on('message', (raw) => {
+        handleClientEvent({ socket, userId, organizationId, raw });
       });
 
       const heartbeat = setInterval(() => {

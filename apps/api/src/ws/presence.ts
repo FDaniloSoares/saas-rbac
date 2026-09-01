@@ -1,11 +1,8 @@
 import type { WebSocket } from '@fastify/websocket';
 
-const OFFLINE_GRACE_PERIOD_IN_MS = 5000;
+import type { ServerEvent } from './protocol';
 
-export type PresenceEvent =
-  | { type: 'presence:sync'; userIds: string[] }
-  | { type: 'presence:online'; userId: string }
-  | { type: 'presence:offline'; userId: string };
+const OFFLINE_GRACE_PERIOD_IN_MS = 5000;
 
 interface OrganizationPresence {
   /* um usuário pode ter várias abas abertas, por isso um Set de sockets */
@@ -26,13 +23,13 @@ function getOrganizationPresence(organizationId: string) {
   return presence;
 }
 
-function send(socket: WebSocket, event: PresenceEvent) {
+export function send(socket: WebSocket, event: ServerEvent) {
   if (socket.readyState === socket.OPEN) {
     socket.send(JSON.stringify(event));
   }
 }
 
-function broadcast(organizationId: string, event: PresenceEvent) {
+function broadcast(organizationId: string, event: ServerEvent) {
   const presence = organizations.get(organizationId);
 
   if (!presence) {
@@ -130,4 +127,24 @@ export function disconnect(
   }, OFFLINE_GRACE_PERIOD_IN_MS);
 
   presence.pendingOffline.set(userId, timeout);
+}
+
+export function sendToUser(
+  organizationId: string,
+  userId: string,
+  event: ServerEvent,
+  options?: { exceptSocket?: WebSocket }
+) {
+  const sockets = organizations.get(organizationId)?.users.get(userId);
+
+  if (!sockets) {
+    return;
+  }
+
+  const payload = JSON.stringify(event);
+
+  for (const socket of sockets) {
+    if (socket === options?.exceptSocket) continue;
+    if (socket.readyState === socket.OPEN) socket.send(payload);
+  }
 }
