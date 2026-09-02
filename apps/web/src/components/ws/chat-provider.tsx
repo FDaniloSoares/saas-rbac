@@ -55,7 +55,7 @@ export function ChatProvider({
   currentUserId,
   children,
 }: Readonly<{
-  slug: string | null;
+  slug: string;
   currentUserId: string;
   children: React.ReactNode;
 }>) {
@@ -84,7 +84,7 @@ export function ChatProvider({
   useEffect(() => {
     const token = getCookie('token');
 
-    if (!slug || !token) return;
+    if (!token) return;
 
     let reconnectTimeout: ReturnType<typeof setTimeout>;
     let attempt = 0;

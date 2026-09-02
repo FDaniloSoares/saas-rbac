@@ -22,7 +22,7 @@ export interface Contact {
 }
 
 interface ChatProps {
-  org: string | null;
+  org: string;
   contacts: Contact[];
 }
 
@@ -35,8 +35,7 @@ export default function Chat({ org, contacts }: Readonly<ChatProps>) {
   sempre que uma mensagem entra ou é marcada como lida */
   const { data } = useQuery({
     queryKey: conversationsQueryKey,
-    queryFn: () => getConversations(org!),
-    enabled: Boolean(org),
+    queryFn: () => getConversations(org),
   });
 
   const summaries = new Map(
@@ -67,7 +66,7 @@ export default function Chat({ org, contacts }: Readonly<ChatProps>) {
         expanded ? 'w-72' : 'w-16'
       )}
     >
-      {expanded && activeContact && org ? (
+      {expanded && activeContact ? (
         <ConversationView
           key={activeContact.userId}
           org={org}
