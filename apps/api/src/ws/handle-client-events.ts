@@ -1,3 +1,4 @@
+import { clientEventSchema } from '@saas/chat';
 import type { RawData, WebSocket } from 'ws';
 
 import { prisma } from '@/lib/prisma';
@@ -5,7 +6,6 @@ import { getConversationId } from '@/utils/get-conversation-id';
 
 import { createMessage, markAsRead, serializeMessage } from './message-store';
 import { send, sendToUser } from './presence';
-import { clientEventSchema } from './protocol';
 
 const RATE_LIMIT_WINDOW_IN_MS = 10_000;
 const RATE_LIMIT_MAX_EVENTS = 20;

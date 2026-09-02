@@ -1,6 +1,5 @@
 import type { WebSocket } from '@fastify/websocket';
-
-import type { ServerEvent } from './protocol';
+import type { ServerEvent } from '@saas/chat';
 
 const OFFLINE_GRACE_PERIOD_IN_MS = 5000;
 

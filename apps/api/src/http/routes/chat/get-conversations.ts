@@ -1,10 +1,10 @@
+import { messageSchema } from '@saas/chat';
 import type { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import z from 'zod';
 
 import { auth } from '@/http/middlewares/auth';
 import { listConversationSummaries } from '@/ws/message-store';
-import { messageSchema } from '@/ws/protocol';
 
 export async function getConversations(app: FastifyInstance) {
   app

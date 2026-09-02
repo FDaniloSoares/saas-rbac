@@ -1,4 +1,4 @@
-import type { ChatMessage } from './protocol';
+import type { ChatMessage } from '@saas/chat';
 
 const MAX_MESSAGES_PER_CONVERSATION = 200;
 

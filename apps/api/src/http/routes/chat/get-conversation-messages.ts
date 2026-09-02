@@ -1,3 +1,4 @@
+import { messageSchema } from '@saas/chat';
 import type { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import z from 'zod';
@@ -6,7 +7,6 @@ import { auth } from '@/http/middlewares/auth';
 import { prisma } from '@/lib/prisma';
 import { getConversationId } from '@/utils/get-conversation-id';
 import { listMessages, serializeMessage } from '@/ws/message-store';
-import { messageSchema } from '@/ws/protocol';
 
 import { BadRequestError } from '../_errors/bad-request-errors';
 

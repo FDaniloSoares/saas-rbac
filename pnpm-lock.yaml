@@ -51,6 +51,9 @@ importers:
       '@saas/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@saas/chat':
+        specifier: workspace:*
+        version: link:../../packages/chat
       '@saas/env':
         specifier: workspace:*
         version: link:../../packages/env
@@ -121,6 +124,9 @@ importers:
       '@saas/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@saas/chat':
+        specifier: workspace:*
+        version: link:../../packages/chat
       '@saas/env':
         specifier: workspace:*
         version: link:../../packages/env
@@ -233,6 +239,22 @@ importers:
       '@casl/ability':
         specifier: ^6.7.3
         version: 6.7.3
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
+    devDependencies:
+      '@saas/eslint-config':
+        specifier: workspace:*
+        version: link:../../config/eslint-config
+      '@saas/prettier':
+        specifier: workspace:*
+        version: link:../../config/prettier
+      '@saas/tsconfig':
+        specifier: workspace:*
+        version: link:../../config/typescript-config
+
+  packages/chat:
+    dependencies:
       zod:
         specifier: ^4.1.12
         version: 4.1.12

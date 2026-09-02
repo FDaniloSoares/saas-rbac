@@ -1,10 +1,15 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { useOnlineUsers } from '@/components/ws/presence-provider';
+import {
+  conversationsQueryKey,
+  useOnlineUsers,
+} from '@/components/ws/chat-provider';
+import { getConversations } from '@/http/get-conversations';
 import { cn } from '@/lib/utils';
 
 import { ContactAvatar } from './contact-avatar';
@@ -16,10 +21,30 @@ export interface Contact {
   avatarUrl: string | null;
 }
 
-export default function Chat({ contacts }: Readonly<{ contacts: Contact[] }>) {
+interface ChatProps {
+  org: string | null;
+  contacts: Contact[];
+}
+
+export default function Chat({ org, contacts }: Readonly<ChatProps>) {
   const onlineUserIds = useOnlineUsers();
   const [expanded, setExpanded] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  /* prévia e não-lidas por contato; o provider invalida esta query
+  sempre que uma mensagem entra ou é marcada como lida */
+  const { data } = useQuery({
+    queryKey: conversationsQueryKey,
+    queryFn: () => getConversations(org!),
+    enabled: Boolean(org),
+  });
+
+  const summaries = new Map(
+    data?.conversations.map((conversation) => [
+      conversation.withUserId,
+      conversation,
+    ])
+  );
 
   const activeContact =
     contacts.find((contact) => contact.userId === activeId) ?? null;
@@ -42,9 +67,10 @@ export default function Chat({ contacts }: Readonly<{ contacts: Contact[] }>) {
         expanded ? 'w-72' : 'w-16'
       )}
     >
-      {expanded && activeContact ? (
+      {expanded && activeContact && org ? (
         <ConversationView
           key={activeContact.userId}
+          org={org}
           contact={activeContact}
           online={onlineUserIds.has(activeContact.userId)}
           onBack={() => setActiveId(null)}
@@ -72,30 +98,57 @@ export default function Chat({ contacts }: Readonly<{ contacts: Contact[] }>) {
           </div>
 
           <nav className="min-h-0 flex-1 space-y-1 overflow-x-hidden overflow-y-auto p-2">
-            {contacts.map((contact) => (
-              <button
-                key={contact.userId}
-                type="button"
-                title={contact.name}
-                onClick={() => openConversation(contact.userId)}
-                className="hover:bg-sidebar-accent flex w-full cursor-pointer items-center gap-3 rounded-lg p-2 text-left transition-colors"
-              >
-                <ContactAvatar
-                  name={contact.name}
-                  avatarUrl={contact.avatarUrl}
-                  online={onlineUserIds.has(contact.userId)}
-                />
+            {contacts.map((contact) => {
+              const summary = summaries.get(contact.userId);
 
-                <div
-                  className={cn(
-                    'min-w-0 flex-1 transition-opacity duration-200',
-                    expanded ? 'opacity-100 delay-100' : 'opacity-0'
-                  )}
+              return (
+                <button
+                  key={contact.userId}
+                  type="button"
+                  title={contact.name}
+                  onClick={() => openConversation(contact.userId)}
+                  className="hover:bg-sidebar-accent flex w-full cursor-pointer items-center gap-3 rounded-lg p-2 text-left transition-colors"
                 >
-                  <p className="truncate text-sm font-medium">{contact.name}</p>
-                </div>
-              </button>
-            ))}
+                  <div className="relative shrink-0">
+                    <ContactAvatar
+                      name={contact.name}
+                      avatarUrl={contact.avatarUrl}
+                      online={onlineUserIds.has(contact.userId)}
+                    />
+
+                    {/* recolhido: o badge é a única pista de mensagem nova */}
+                    {!expanded && Boolean(summary?.unreadCount) && (
+                      <span className="bg-primary text-primary-foreground ring-sidebar absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-[10px] font-medium ring-2">
+                        {summary!.unreadCount > 9 ? '9+' : summary!.unreadCount}
+                      </span>
+                    )}
+                  </div>
+
+                  <div
+                    className={cn(
+                      'min-w-0 flex-1 transition-opacity duration-200',
+                      expanded ? 'opacity-100 delay-100' : 'opacity-0'
+                    )}
+                  >
+                    <p className="truncate text-sm font-medium">
+                      {contact.name}
+                    </p>
+
+                    {summary && (
+                      <p className="text-muted-foreground truncate text-xs">
+                        {summary.lastMessage.content}
+                      </p>
+                    )}
+                  </div>
+
+                  {expanded && Boolean(summary?.unreadCount) && (
+                    <span className="bg-primary text-primary-foreground flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-medium">
+                      {summary!.unreadCount > 9 ? '9+' : summary!.unreadCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </nav>
         </>
       )}
