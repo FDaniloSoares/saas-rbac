@@ -3,7 +3,7 @@ import { Pool } from 'pg';
 
 import { PrismaClient } from '../../prisma/generated/client';
 
-const pool = new Pool({
+export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
@@ -11,5 +11,5 @@ const adapter = new PrismaPg(pool);
 
 export const prisma = new PrismaClient({
   adapter,
-  log: ['query'],
+  log: process.env.NODE_ENV === 'test' ? [] : ['query'],
 });
