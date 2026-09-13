@@ -43,3 +43,7 @@ mise.toml
 .env
 
 /src/generated/prisma
+
+# AI
+.agents
+.claude
