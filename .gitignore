@@ -41,9 +41,13 @@ mise.toml
 
 # Keep environment variables out of version control
 .env
+.env.test
 
 /src/generated/prisma
 
 # AI
 .agents
 .claude
+.design
+.tasks
+.checks
