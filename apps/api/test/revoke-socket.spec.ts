@@ -1,6 +1,7 @@
 import { request as httpRequest } from 'node:http';
 import type { AddressInfo } from 'node:net';
 
+import type { ServerEvent } from '@saas/chat';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildApp } from '@/http/app';
@@ -27,7 +28,55 @@ afterEach(async () => {
 
 interface OpenSocket {
   closed: Promise<{ code: number; reason: string }>;
+  nextEvent(match: (event: ServerEvent) => boolean): Promise<ServerEvent>;
   destroy(): void;
+}
+
+interface Frame {
+  opcode: number;
+  payload: Buffer<ArrayBufferLike>;
+}
+
+/* varre o buffer acumulado e devolve os frames completos que couberem. o
+servidor nunca mascara, e frames de controle são limitados a 125 bytes pela
+RFC 6455, então só os de texto chegam a precisar do comprimento estendido */
+function drainFrames(buffer: Buffer<ArrayBufferLike>): {
+  frames: Frame[];
+  rest: Buffer<ArrayBufferLike>;
+} {
+  const frames: Frame[] = [];
+  let offset = 0;
+
+  for (;;) {
+    if (buffer.length - offset < 2) break;
+
+    const opcode = buffer[offset] & 0x0f;
+    const short = buffer[offset + 1] & 0x7f;
+
+    let headerSize = 2;
+    let length = short;
+
+    if (short === 126) {
+      if (buffer.length - offset < 4) break;
+      length = buffer.readUInt16BE(offset + 2);
+      headerSize = 4;
+    } else if (short === 127) {
+      if (buffer.length - offset < 10) break;
+      length = Number(buffer.readBigUInt64BE(offset + 2));
+      headerSize = 10;
+    }
+
+    if (buffer.length - offset < headerSize + length) break;
+
+    frames.push({
+      opcode,
+      payload: buffer.subarray(offset + headerSize, offset + headerSize + length),
+    });
+
+    offset += headerSize + length;
+  }
+
+  return { frames, rest: buffer.subarray(offset) };
 }
 
 /* cliente WebSocket mínimo em cima de node:http. o `ws` não é dependência
@@ -54,24 +103,62 @@ function openSocket(slug: string, token: string): Promise<OpenSocket> {
     });
 
     client.on('upgrade', (_response, socket) => {
-      const closed = new Promise<{ code: number; reason: string }>(
-        (resolveClosed) => {
-          socket.on('data', (chunk: Buffer) => {
-            /* frame de close: opcode 0x8, payload = uint16 code + razão utf8 */
-            if ((chunk[0] & 0x0f) !== 0x8) return;
+      const received: ServerEvent[] = [];
+      const waiting: {
+        match: (event: ServerEvent) => boolean;
+        resolve: (event: ServerEvent) => void;
+      }[] = [];
 
-            const length = chunk[1] & 0x7f;
-            const payload = chunk.subarray(2, 2 + length);
+      let resolveClosed: (close: { code: number; reason: string }) => void;
+      const closed = new Promise<{ code: number; reason: string }>((r) => {
+        resolveClosed = r;
+      });
 
+      let buffer: Buffer<ArrayBufferLike> = Buffer.alloc(0);
+
+      socket.on('data', (chunk: Buffer) => {
+        buffer = Buffer.concat([buffer, chunk]);
+
+        const { frames, rest } = drainFrames(buffer);
+        buffer = rest;
+
+        for (const frame of frames) {
+          /* 0x8 = close: payload é uint16 com o código, mais a razão em utf8 */
+          if (frame.opcode === 0x8) {
             resolveClosed({
-              code: payload.readUInt16BE(0),
-              reason: payload.subarray(2).toString('utf8'),
+              code: frame.payload.readUInt16BE(0),
+              reason: frame.payload.subarray(2).toString('utf8'),
             });
-          });
-        }
-      );
+            continue;
+          }
 
-      resolve({ closed, destroy: () => socket.destroy() });
+          if (frame.opcode !== 0x1) continue;
+
+          const event = JSON.parse(frame.payload.toString('utf8'));
+
+          received.push(event);
+
+          const index = waiting.findIndex((entry) => entry.match(event));
+
+          if (index !== -1) {
+            waiting.splice(index, 1)[0].resolve(event);
+          }
+        }
+      });
+
+      resolve({
+        closed,
+        nextEvent(match) {
+          const already = received.find(match);
+
+          if (already) return Promise.resolve(already);
+
+          return new Promise<ServerEvent>((resolveEvent) => {
+            waiting.push({ match, resolve: resolveEvent });
+          });
+        },
+        destroy: () => socket.destroy(),
+      });
     });
 
     client.on('error', reject);
@@ -149,6 +236,40 @@ describe('revogação de acesso', () => {
     expect(getOnlineUserIds(organization.id)).not.toContain(member.id);
 
     socket.destroy();
+  });
+
+  it('quem fica ve o removido sair na hora', async () => {
+    const { owner, organization, member, membership } =
+      await organizationWithMember();
+
+    const ownerSocket = await openSocket(
+      organization.slug,
+      app.jwt.sign({ sub: owner.id })
+    );
+    const memberSocket = await openSocket(
+      organization.slug,
+      app.jwt.sign({ sub: member.id })
+    );
+
+    /* o `presence:offline` tem de chegar sem esperar os 5s de graça: revogação
+    não é desconexão, e quem foi revogado não vai reconectar */
+    const offline = ownerSocket.nextEvent(
+      (event) => event.type === 'presence:offline'
+    );
+
+    await app.inject({
+      method: 'DELETE',
+      url: `/organizations/${organization.slug}/members/${membership.id}`,
+      headers: asOwner(owner.id),
+    });
+
+    await expect(offline).resolves.toEqual({
+      type: 'presence:offline',
+      userId: member.id,
+    });
+
+    ownerSocket.destroy();
+    memberSocket.destroy();
   });
 
   it('remover sem socket responde 204', async () => {

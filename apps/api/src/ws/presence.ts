@@ -139,7 +139,7 @@ function revoke(presence: OrganizationPresence, userId: string) {
   const sockets = presence.users.get(userId);
 
   if (!sockets) {
-    return;
+    return false;
   }
 
   const pendingOffline = presence.pendingOffline.get(userId);
@@ -156,6 +156,8 @@ function revoke(presence: OrganizationPresence, userId: string) {
   for (const socket of sockets) {
     socket.close(REVOKED_CLOSE_CODE, REVOKED_CLOSE_REASON);
   }
+
+  return true;
 }
 
 /* todas as abas de um membro removido de uma organização */
@@ -166,7 +168,12 @@ export function disconnectUser(organizationId: string, userId: string) {
     return;
   }
 
-  revoke(presence, userId);
+  /* quem nunca esteve conectado não fica offline: transmitir aqui mandaria
+  aos outros membros um evento sobre alguém que já não aparecia como online */
+  if (!revoke(presence, userId)) {
+    return;
+  }
+
   broadcast(organizationId, { type: 'presence:offline', userId });
 
   if (presence.users.size === 0) {
