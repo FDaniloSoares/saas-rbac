@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { fastifyPlugin } from 'fastify-plugin';
 
-import { prisma } from '@/lib/prisma';
+import { getMembership } from '@/services/membership';
 
 import { UnauthorizedError } from '../routes/_errors/unauthorized-error';
 
@@ -23,31 +23,11 @@ export const auth = fastifyPlugin(async (app: FastifyInstance) => {
       }
     };
 
+    /* a regra vive em services/membership; isto é só a ponte para o request */
     request.getUserMembership = async (slug: string) => {
       const userId = await request.getCurrentUserId();
 
-      const member = await prisma.member.findFirst({
-        where: {
-          userId,
-          organization: {
-            slug,
-          },
-        },
-        include: {
-          organization: true,
-        },
-      });
-
-      if (!member) {
-        throw new UnauthorizedError('You are not the father!!!');
-      }
-
-      const { organization, ...membership } = member;
-
-      return {
-        organization,
-        membership,
-      };
+      return getMembership({ userId, slug });
     };
   });
 });

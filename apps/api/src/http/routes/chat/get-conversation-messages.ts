@@ -4,7 +4,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import z from 'zod';
 
 import { auth } from '@/http/middlewares/auth';
-import { prisma } from '@/lib/prisma';
+import { findMembership } from '@/services/membership';
 import { getConversationId } from '@/utils/get-conversation-id';
 import { listMessages, serializeMessage } from '@/ws/message-store';
 
@@ -53,14 +53,9 @@ export async function getConversationMessages(app: FastifyInstance) {
         }
 
         /* o outro lado precisa ser membro da mesma organização */
-        const member = await prisma.member.findUnique({
-          where: {
-            organizationId_userId: {
-              organizationId: organization.id,
-              userId: withUserId,
-            },
-          },
-          select: { userId: true },
+        const member = await findMembership({
+          organizationId: organization.id,
+          userId: withUserId,
         });
 
         if (!member) {

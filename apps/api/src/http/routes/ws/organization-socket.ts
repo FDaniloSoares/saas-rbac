@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import z from 'zod';
 
-import { prisma } from '@/lib/prisma';
+import { getMembership } from '@/services/membership';
 import { handleClientEvent } from '@/ws/handle-client-events';
 import { connect, disconnect } from '@/ws/presence';
 
@@ -35,23 +35,10 @@ export async function organizationSocket(app: FastifyInstance) {
           throw new UnauthorizedError('Invalid auth token');
         }
 
-        const member = await prisma.member.findFirst({
-          where: {
-            userId,
-            organization: { slug },
-          },
-          select: {
-            organizationId: true,
-          },
-        });
+        /* mesma regra que as rotas HTTP usam, e não uma segunda consulta */
+        const { organization } = await getMembership({ userId, slug });
 
-        if (!member) {
-          throw new UnauthorizedError(
-            'You are not member of this organization'
-          );
-        }
-
-        request.presence = { userId, organizationId: member.organizationId };
+        request.presence = { userId, organizationId: organization.id };
       },
     },
     (socket, request) => {

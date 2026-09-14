@@ -1,7 +1,7 @@
 import { clientEventSchema } from '@saas/chat';
 import type { RawData, WebSocket } from 'ws';
 
-import { prisma } from '@/lib/prisma';
+import { findMembership } from '@/services/membership';
 import { getConversationId } from '@/utils/get-conversation-id';
 
 import { createMessage, markAsRead, serializeMessage } from './message-store';
@@ -81,11 +81,9 @@ export async function handleClientEvent({
     }
 
     /* o outro lado precisa ser membro DA MESMA org desta conexão */
-    const target = await prisma.member.findUnique({
-      where: {
-        organizationId_userId: { organizationId, userId: targetUserId },
-      },
-      select: { userId: true },
+    const target = await findMembership({
+      organizationId,
+      userId: targetUserId,
     });
 
     if (!target) {
