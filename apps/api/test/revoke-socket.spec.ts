@@ -125,10 +125,16 @@ function openSocket(slug: string, token: string): Promise<OpenSocket> {
         for (const frame of frames) {
           /* 0x8 = close: payload é uint16 com o código, mais a razão em utf8 */
           if (frame.opcode === 0x8) {
-            resolveClosed({
-              code: frame.payload.readUInt16BE(0),
-              reason: frame.payload.subarray(2).toString('utf8'),
-            });
+            /* um close pode vir sem payload: a RFC permite, e ler os 2 bytes
+            do código às cegas estoura o buffer em vez de reprovar o check */
+            resolveClosed(
+              frame.payload.length >= 2
+                ? {
+                    code: frame.payload.readUInt16BE(0),
+                    reason: frame.payload.subarray(2).toString('utf8'),
+                  }
+                : { code: 1005, reason: '' }
+            );
             continue;
           }
 
@@ -251,8 +257,6 @@ describe('revogação de acesso', () => {
       app.jwt.sign({ sub: member.id })
     );
 
-    /* o `presence:offline` tem de chegar sem esperar os 5s de graça: revogação
-    não é desconexão, e quem foi revogado não vai reconectar */
     const offline = ownerSocket.nextEvent(
       (event) => event.type === 'presence:offline'
     );
@@ -263,13 +267,58 @@ describe('revogação de acesso', () => {
       headers: asOwner(owner.id),
     });
 
-    await expect(offline).resolves.toEqual({
+    /* corrida contra um relógio, e não uma espera seguida de medição: o
+    período de graça do `disconnect` é de 5000ms, então uma implementação que
+    passasse por ele perderia esta corrida e reprovaria **por assertiva**, em
+    2s. Medir depois de esperar faria o runner estourar o timeout primeiro, e
+    aí quem elevasse `testTimeout` desligaria a discriminação sem perceber */
+    const tooLate = Symbol('chegou depois da graça');
+
+    const outcome = await Promise.race([
+      offline,
+      new Promise((resolve) => setTimeout(() => resolve(tooLate), 2000)),
+    ]);
+
+    expect(outcome).toEqual({
       type: 'presence:offline',
       userId: member.id,
     });
 
     ownerSocket.destroy();
     memberSocket.destroy();
+  });
+
+  it('removido sem socket nao anuncia offline', async () => {
+    const { owner, organization, member, membership } =
+      await organizationWithMember();
+
+    /* só o dono conecta: o membro é removido sem nunca ter aberto socket */
+    const ownerSocket = await openSocket(
+      organization.slug,
+      app.jwt.sign({ sub: owner.id })
+    );
+
+    await app.inject({
+      method: 'DELETE',
+      url: `/organizations/${organization.slug}/members/${membership.id}`,
+      headers: asOwner(owner.id),
+    });
+
+    const offline = ownerSocket.nextEvent(
+      (event) => event.type === 'presence:offline'
+    );
+
+    const nothing = Symbol('nenhum evento');
+
+    const outcome = await Promise.race([
+      offline,
+      new Promise((resolve) => setTimeout(() => resolve(nothing), 1000)),
+    ]);
+
+    expect(outcome).toBe(nothing);
+    expect(getOnlineUserIds(organization.id)).not.toContain(member.id);
+
+    ownerSocket.destroy();
   });
 
   it('remover sem socket responde 204', async () => {
