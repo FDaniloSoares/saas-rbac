@@ -36,3 +36,10 @@ export type ServerEvent =
   | { type: 'message:ack'; clientId: string; message: ChatMessage }
   | { type: 'message:read'; withUserId: string; readAt: string }
   | { type: 'error'; code: string; message: string };
+
+/* contrato de fechamento: o servidor fecha com este código quando o
+pertencimento acaba, e o cliente para de reconectar ao vê-lo. faixa 4000-4999,
+uso privado pela RFC 6455 — um handshake recusado chegaria como 1006, que o
+navegador não distingue de queda de rede */
+export const REVOKED_CLOSE_CODE = 4003;
+export const REVOKED_CLOSE_REASON = 'membership-revoked';

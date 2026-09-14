@@ -1,5 +1,9 @@
 import type { WebSocket } from '@fastify/websocket';
-import type { ServerEvent } from '@saas/chat';
+import {
+  REVOKED_CLOSE_CODE,
+  REVOKED_CLOSE_REASON,
+  type ServerEvent,
+} from '@saas/chat';
 
 const OFFLINE_GRACE_PERIOD_IN_MS = 5000;
 
@@ -126,6 +130,63 @@ export function disconnect(
   }, OFFLINE_GRACE_PERIOD_IN_MS);
 
   presence.pendingOffline.set(userId, timeout);
+}
+
+/* revogação não é desconexão: quem perdeu o pertencimento não vai reconectar,
+então não passa pelo período de graça do `disconnect`. deixá-lo lá por 5s
+mostraria aos outros membros alguém que já não pertence à organização */
+function revoke(presence: OrganizationPresence, userId: string) {
+  const sockets = presence.users.get(userId);
+
+  if (!sockets) {
+    return;
+  }
+
+  const pendingOffline = presence.pendingOffline.get(userId);
+
+  if (pendingOffline) {
+    clearTimeout(pendingOffline);
+    presence.pendingOffline.delete(userId);
+  }
+
+  /* some do registro ANTES de fechar: o handler de `close` chama `disconnect`,
+  e com a entrada já removida ele não tem o que reagendar */
+  presence.users.delete(userId);
+
+  for (const socket of sockets) {
+    socket.close(REVOKED_CLOSE_CODE, REVOKED_CLOSE_REASON);
+  }
+}
+
+/* todas as abas de um membro removido de uma organização */
+export function disconnectUser(organizationId: string, userId: string) {
+  const presence = organizations.get(organizationId);
+
+  if (!presence) {
+    return;
+  }
+
+  revoke(presence, userId);
+  broadcast(organizationId, { type: 'presence:offline', userId });
+
+  if (presence.users.size === 0) {
+    organizations.delete(organizationId);
+  }
+}
+
+/* organização encerrada: o pertencimento de todo mundo acabou junto */
+export function disconnectOrganization(organizationId: string) {
+  const presence = organizations.get(organizationId);
+
+  if (!presence) {
+    return;
+  }
+
+  for (const userId of [...presence.users.keys()]) {
+    revoke(presence, userId);
+  }
+
+  organizations.delete(organizationId);
 }
 
 export function sendToUser(

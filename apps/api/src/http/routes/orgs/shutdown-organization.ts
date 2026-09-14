@@ -6,6 +6,7 @@ import z from 'zod';
 import { auth } from '@/http/middlewares/auth';
 import { prisma } from '@/lib/prisma';
 import { getUserPermissions } from '@/utils/get-user-permissions';
+import { disconnectOrganization } from '@/ws/presence';
 
 import { UnauthorizedError } from '../_errors/unauthorized-error';
 
@@ -49,6 +50,9 @@ export async function shutdownOrganization(app: FastifyInstance) {
             id: organization.id,
           },
         });
+
+        /* a cascata apagou os membros: ninguém ali pertence a nada agora */
+        disconnectOrganization(organization.id);
 
         return reply.status(204).send();
       }

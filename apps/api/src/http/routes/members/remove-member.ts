@@ -5,6 +5,7 @@ import z from 'zod';
 import { auth } from '@/http/middlewares/auth';
 import { prisma } from '@/lib/prisma';
 import { getUserPermissions } from '@/utils/get-user-permissions';
+import { disconnectUser } from '@/ws/presence';
 
 import { UnauthorizedError } from '../_errors/unauthorized-error';
 
@@ -43,12 +44,16 @@ export async function removeMember(app: FastifyInstance) {
           );
         }
 
-        await prisma.member.delete({
+        /* o delete devolve o registro apagado, e é dele que sai o userId
+        necessário para alcançar os sockets de quem acabou de perder acesso */
+        const removed = await prisma.member.delete({
           where: {
             id: memberId,
             organizationId: organization.id,
           },
         });
+
+        disconnectUser(organization.id, removed.userId);
 
         return reply.status(204).send();
       }
