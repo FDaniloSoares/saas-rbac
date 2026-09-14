@@ -5,6 +5,7 @@ import z from 'zod';
 
 import { auth } from '@/http/middlewares/auth';
 import { prisma } from '@/lib/prisma';
+import { findMembership } from '@/services/membership';
 import { getUserPermissions } from '@/utils/get-user-permissions';
 
 import { BadRequestError } from '../_errors/bad-request-errors';
@@ -50,13 +51,9 @@ export async function transferOrganization(app: FastifyInstance) {
 
         const { transferToUserId } = request.body;
 
-        const transferToMembership = await prisma.member.findUnique({
-          where: {
-            organizationId_userId: {
-              organizationId: organization.id,
-              userId: transferToUserId,
-            },
-          },
+        const transferToMembership = await findMembership({
+          organizationId: organization.id,
+          userId: transferToUserId,
         });
 
         if (!transferToMembership) {
