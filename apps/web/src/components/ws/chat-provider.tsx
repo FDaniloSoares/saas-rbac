@@ -4,6 +4,7 @@ import type { ChatMessage, ClientEvent, ServerEvent } from '@saas/chat';
 import { env } from '@saas/env';
 import { useQueryClient } from '@tanstack/react-query';
 import { getCookie } from 'cookies-next/client';
+import { shouldReconnect } from './reconnect';
 import {
   createContext,
   use,
@@ -175,7 +176,7 @@ export function ChatProvider({
         }
       };
 
-      socket.onclose = () => {
+      socket.onclose = (event) => {
         /* só limpa se ainda for o socket atual: o close de um socket
         antigo chega depois de o novo já ter assumido a referência
         (StrictMode em dev, ou troca de organização) */
@@ -187,6 +188,13 @@ export function ChatProvider({
 
         /* sem conexão não dá pra afirmar que alguém está online */
         setOnlineUserIds(new Set());
+
+        /* 4003 = pertencimento revogado. reconectar levaria 401 e o
+        navegador nao distingue esse 401 de queda de rede, entao a decisao
+        precisa ser tomada aqui, com o codigo em maos */
+        if (!shouldReconnect(event.code, attempt)) {
+          return;
+        }
 
         /* backoff exponencial com jitter: sem o jitter, todo mundo
         reconecta no mesmo milissegundo quando a API reinicia */
