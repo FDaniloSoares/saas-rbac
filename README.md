@@ -117,6 +117,7 @@ Every inbound frame is validated with a Zod discriminated union from `@saas/chat
 - **Client reconnects with exponential backoff and jitter** — without jitter, every client would reconnect on the same millisecond after an API restart.
 - **Store first, deliver second** — a message is written before it is broadcast. Delivering first would let a failed write leave the message on screen and nowhere else.
 - **Optimistic send keyed by `clientId`** — the bubble is painted immediately and replaced when the `ack` returns. The sender's *other* tabs get `message:new` instead and insert by `id`, so nothing is duplicated.
+- **Revocation closes the socket, and skips the grace period.** Removing a member or shutting down an organization closes every open connection with close code `4003` / `membership-revoked`. The 5s offline grace exists for page refreshes; a revoked member cannot reconnect, so holding them online would show the rest of the organization somebody who no longer belongs. The client reads the code and stops reconnecting — a rejected handshake arrives as `1006`, which the browser cannot tell apart from a dropped network.
 - **Per-connection rate limit** — an authenticated socket can otherwise flood the store; a token bucket in a `WeakMap` caps it without needing cleanup on close.
 
 ### Storage
@@ -258,7 +259,6 @@ API docs available at `http://localhost:3333/swagger` (Swagger UI).
 |-----|--------|
 | Messages live in process memory | An API restart clears every conversation. `tsx watch` restarts on each save, so this shows up constantly in development. |
 | Single instance only | Both the presence registry and the message store are process-local; two replicas cannot see each other. |
-| Removed members keep their socket | Authorization is resolved once at the handshake — `remove-member` does not yet close open connections. |
 | 200 messages per conversation | Ring buffer; older messages are dropped to bound memory. |
 
 ### Next steps, in order
