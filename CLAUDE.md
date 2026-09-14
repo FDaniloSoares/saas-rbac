@@ -2,8 +2,7 @@
 
 ## Git
 
-**Não faça commits.** Escreva o código, rode as provas, deixe as mudanças no working tree
-e relate o que mudou. Quem commita é o Danilo — inclusive quando um plano ou uma skill
-descrever "commit em peças coerentes" como parte do fluxo.
+Commits são bem-vindos: ao terminar um trabalho, commite em peças coerentes,
+com Conventional Commits, sem esperar pedido.
 
-Isso vale também para `git add`: deixe o stage como está.
+Nunca faça `git push` — publicar é decisão do Danilo.
