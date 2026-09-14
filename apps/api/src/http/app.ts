@@ -12,6 +12,12 @@ import {
   ZodTypeProvider,
 } from 'fastify-type-provider-zod';
 
+import { githubOAuthHttp } from '@/adapters/github-oauth-http';
+import { mailerConsole } from '@/adapters/mailer-console';
+import { tokenSignerFastifyJwt } from '@/adapters/token-signer-fastify-jwt';
+import type { GithubOAuth } from '@/ports/github-oauth';
+import type { Mailer } from '@/ports/mailer';
+
 import { errorHandler } from './error-handler';
 import { authenticateWithGithub } from './routes/auth/authenticate-with-github';
 import { authenticateWithPassword } from './routes/auth/authenticate-with-password';
@@ -45,8 +51,19 @@ import { getProject } from './routes/projects/get-project';
 import { getProjects } from './routes/projects/get-projects';
 import { organizationSocket } from './routes/ws/organization-socket';
 
-export function buildApp() {
+export interface AppPorts {
+  github: GithubOAuth;
+  mailer: Mailer;
+}
+
+/* os adaptadores reais sao o default; o teste passa falsos pelo mesmo
+parametro, entao producao e suite montam a app pelo mesmo caminho */
+export function buildApp(ports: Partial<AppPorts> = {}) {
   const app = fastify().withTypeProvider<ZodTypeProvider>();
+
+  const github = ports.github ?? githubOAuthHttp;
+  const mailer = ports.mailer ?? mailerConsole;
+  const tokenSigner = tokenSignerFastifyJwt(app);
 
   app.setSerializerCompiler(serializerCompiler);
   app.setValidatorCompiler(validatorCompiler);
@@ -84,10 +101,10 @@ export function buildApp() {
   app.register(fastifyWebsocket);
 
   app.register(CreateAccount);
-  app.register(authenticateWithPassword);
-  app.register(authenticateWithGithub);
+  app.register(authenticateWithPassword({ tokenSigner }));
+  app.register(authenticateWithGithub({ github, tokenSigner }));
   app.register(getProfile);
-  app.register(requestPasswordRecover);
+  app.register(requestPasswordRecover({ mailer }));
   app.register(resetPassword);
 
   app.register(createOrganization);
