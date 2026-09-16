@@ -76,6 +76,15 @@ check(
   'existe um `if:` — um job ou passo condicional pode ficar verde sem rodar'
 );
 
+/* `working-directory: apps/web` no passo de teste deixa o job verde rodando
+4 dos 28 testes, e a suíte da API nunca roda. Todo passo aqui parte da raiz,
+então a chave não tem uso legítimo neste workflow */
+check(
+  'C4/sem-working-directory',
+  !/^ *working-directory:/m.test(code),
+  'existe `working-directory:` — o passo de teste rodaria só parte da suíte'
+);
+
 /* ---- C5: Postgres e migrations antes do teste ---- */
 for (const needle of [
   'POSTGRES_USER: docker',
