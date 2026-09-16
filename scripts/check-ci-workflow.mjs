@@ -37,13 +37,44 @@ for (const trigger of ['push', 'pull_request']) {
 
   if (!match) continue;
 
-  /* `main` como item inteiro da lista, não como prefixo de `maintenance` */
+  const body = match[1];
+
+  /* a chave importa tanto quanto o valor: `branches-ignore: [main]` contém
+  `- main` e significa o oposto, e `paths:` nem fala de branch */
+  const branchesAt = body.search(/^ {4}branches:$/m);
+
+  check(
+    `C4/${trigger}/chave`,
+    branchesAt !== -1,
+    'não usa a chave `branches:` (branches-ignore ou paths significam outra coisa)'
+  );
+
+  check(
+    `C4/${trigger}/ignore`,
+    !/^ {4}branches-ignore:$/m.test(body),
+    'usa `branches-ignore:`, que excluiria a branch em vez de selecioná-la'
+  );
+
+  if (branchesAt === -1) continue;
+
+  /* só a lista sob `branches:`, e `main` como item inteiro da lista */
+  const branchList = body.slice(branchesAt).match(/^ {4}branches:\n((?: {6,}.*\n?)*)/m);
+
   check(
     `C4/${trigger}/branch`,
-    /^ +- main$/m.test(match[1]),
+    Boolean(branchList) && /^ +- main$/m.test(branchList[1]),
     'não restringe a branch main exatamente'
   );
 }
+
+/* um `if:` em qualquer lugar pode pular o passo de teste ou o job inteiro e
+ainda pintar o job de verde. este workflow não tem nada condicional a fazer,
+então a regra é simples: nenhum `if:`. */
+check(
+  'C4/sem-condicional',
+  !/^ *-? *if:/m.test(code),
+  'existe um `if:` — um job ou passo condicional pode ficar verde sem rodar'
+);
 
 /* ---- C5: Postgres e migrations antes do teste ---- */
 for (const needle of [
