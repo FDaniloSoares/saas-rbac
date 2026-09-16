@@ -15,7 +15,8 @@
     "test:watch": "pnpm env:load:test vitest",
     "db:migrate:test": "pnpm env:load:test prisma migrate deploy",
     "build": "tsup",
-    "start": "node dist/http/server.js"
+    "start": "node dist/http/server.js",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@fastify/cors": "^11.1.0",

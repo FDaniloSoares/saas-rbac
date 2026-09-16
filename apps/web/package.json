@@ -7,8 +7,9 @@
     "build": "pnpm env:load next build",
     "start": "next start",
     "env:load": "dotenv -e ../../.env --",
-    "test": "pnpm env:load vitest run",
-    "test:watch": "pnpm env:load vitest"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
