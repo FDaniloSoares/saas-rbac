@@ -251,6 +251,27 @@ API docs available at `http://localhost:3333/swagger` (Swagger UI).
 
 ---
 
+## Running the tests
+
+The API suite talks to a real database — no mocks — so Postgres has to be up:
+
+```bash
+docker compose up -d db
+createdb next-saas-test                # once; or psql -U docker -c 'CREATE DATABASE "next-saas-test"'
+pnpm --filter @saas/api db:migrate:test
+pnpm test                              # both workspaces
+pnpm check-types                       # both workspaces
+```
+
+`apps/api/../../.env.test` holds the values the suite runs against. It is gitignored, so a fresh
+clone has to create it — every value in it is a throwaway, and CI writes its own copy in
+`.github/workflows/ci.yml`, which is the easiest place to copy it from.
+
+CI runs `check-types` and both suites on every push and pull request to `main`, against a Postgres
+service container. No secrets are involved: nothing in the suite reaches the network, because the
+GitHub OAuth provider and the mailer sit behind ports with fake adapters.
+
+
 ## Roadmap
 
 ### Known gaps
