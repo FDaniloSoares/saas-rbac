@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  verify:
+    name: Types and tests
+    runs-on: ubuntu-latest
+
+    services:
+      # Espelha o docker-compose.yml de desenvolvimento. O banco ja nasce com o
+      # nome que .env.test espera, entao nao ha passo de CREATE DATABASE.
+      postgres:
+        image: postgres:18.4
+        env:
+          POSTGRES_USER: docker
+          POSTGRES_PASSWORD: docker
+          POSTGRES_DB: next-saas-test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U docker"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # .env.test e ignorado pelo git de proposito, entao o CI escreve o seu.
+      # Nao ha segredo nenhum aqui: todo valor abaixo e descartavel, e as
+      # variaveis do GitHub OAuth existem so porque @saas/env exige que a app
+      # suba — nenhum teste toca a rede, o provedor fica atras de um fake.
+      - name: Write test environment
+        run: |
+          cat > .env.test <<'ENV'
+          DATABASE_URL="postgresql://docker:docker@localhost:5432/next-saas-test"
+          JWT_SECRET="test-secret"
+          GITHUB_OAUTH_CLIENT_ID="test-client-id"
+          GITHUB_OAUTH_CLIENT_SECRET="test-client-secret"
+          GITHUB_OAUTH_CLIENT_REDIRECT_URI="http://localhost:3000/api/auth/callback"
+          NEXT_PUBLIC_API_URL="http://localhost:3333"
+          SERVER_PORT=3333
+          ENV
+
+      - run: pnpm check-types
+
+      - name: Apply migrations
+        run: pnpm --filter @saas/api db:migrate:test
+
+      - run: pnpm test
